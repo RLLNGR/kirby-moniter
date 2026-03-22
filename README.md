@@ -7,7 +7,7 @@ A lightweight Kirby CMS plugin that exposes a secured status endpoint for the Mo
 ### Via Composer (recommended)
 
 ```bash
-composer require rollinger/kirby-moniter
+composer require rllngr/kirby-moniter
 ```
 
 ### Manual

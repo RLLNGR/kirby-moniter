@@ -1,0 +1,20 @@
+{
+  "name": "rollinger/kirby-moniter",
+  "description": "Kirby CMS plugin — exposes a protected status endpoint for the Moniter dashboard",
+  "version": "1.0.0",
+  "type": "kirby-plugin",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Rollinger",
+      "homepage": "https://rollinger.design"
+    }
+  ],
+  "require": {
+    "php": ">=8.0",
+    "getkirby/composer-installer": "^1.2"
+  },
+  "extra": {
+    "installer-name": "moniter"
+  }
+}

@@ -3,7 +3,7 @@
 use Kirby\Cms\App as Kirby;
 use Kirby\Http\Response;
 
-Kirby::plugin('rollinger/kirby-moniter', [
+Kirby::plugin('rllngr/kirby-moniter', [
     'info' => [
         'version' => '1.0.0',
     ],

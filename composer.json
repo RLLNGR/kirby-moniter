@@ -1,12 +1,12 @@
 {
-  "name": "rollinger/kirby-moniter",
+  "name": "rllngr/kirby-moniter",
   "description": "Kirby CMS plugin — exposes a protected status endpoint for the Moniter dashboard",
   "version": "1.0.0",
   "type": "kirby-plugin",
   "license": "MIT",
   "authors": [
     {
-      "name": "Rollinger",
+      "name": "Nicolas Rollinger",
       "homepage": "https://rollinger.design"
     }
   ],

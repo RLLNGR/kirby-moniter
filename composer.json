@@ -3,12 +3,17 @@
   "description": "Kirby CMS plugin — exposes a protected status endpoint for the Moniter dashboard",
   "type": "kirby-plugin",
   "license": "MIT",
+  "homepage": "https://github.com/RLLNGR/kirby-moniter",
   "authors": [
     {
       "name": "Nicolas Rollinger",
       "homepage": "https://rollinger.design"
     }
   ],
+  "support": {
+    "source": "https://github.com/RLLNGR/kirby-moniter",
+    "issues": "https://github.com/RLLNGR/kirby-moniter/issues"
+  },
   "require": {
     "php": ">=8.0",
     "getkirby/composer-installer": "^1.2"

@@ -5,7 +5,7 @@ use Kirby\Http\Response;
 
 Kirby::plugin('rllngr/kirby-moniter', [
     'info' => [
-        'version' => '1.0.0',
+        'version' => '1.1.0',
     ],
     'routes' => [
         [
@@ -34,9 +34,44 @@ Kirby::plugin('rllngr/kirby-moniter', [
                     $plugins[$name] = $version;
                 }
 
+                // Activité contenu
+                $collections = $kirby->option('moniter.collections', null);
+                $allPages    = $kirby->site()->index()->filterBy('isDraft', false);
+
+                if (!empty($collections) && is_array($collections)) {
+                    $allPages = $allPages->filter(function ($page) use ($collections) {
+                        $segment = $page->parents()->first()
+                            ? $page->parents()->last()->slug()
+                            : $page->slug();
+                        return in_array($segment, $collections, true);
+                    });
+                }
+
+                $sorted = $allPages->sortBy('modified', 'desc');
+
+                $latest = [];
+                foreach ($sorted->slice(0, 5) as $page) {
+                    $latest[] = [
+                        'title'    => $page->title()->value(),
+                        'uri'      => $page->uri(),
+                        'url'      => $page->url(),
+                        'modified' => date('Y-m-d\TH:i:s', $page->modified()),
+                        'template' => $page->template()->name(),
+                    ];
+                }
+
+                $lastModified = $sorted->first()
+                    ? date('Y-m-d\TH:i:s', $sorted->first()->modified())
+                    : null;
+
                 return Response::json([
                     'kirby'   => $kirbyVersion,
                     'plugins' => $plugins,
+                    'content' => [
+                        'last_modified' => $lastModified,
+                        'pages_count'   => $allPages->count(),
+                        'latest'        => $latest,
+                    ],
                 ]);
             },
         ],

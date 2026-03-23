@@ -49,8 +49,9 @@ Kirby::plugin('rllngr/kirby-moniter', [
 
                 $sorted = $allPages->sortBy('modified', 'desc');
 
+                $limit  = (int) ($kirby->option('moniter.limit', 10));
                 $latest = [];
-                foreach ($sorted->slice(0, 5) as $page) {
+                foreach ($sorted->slice(0, $limit) as $page) {
                     $latest[] = [
                         'title'    => $page->title()->value(),
                         'uri'      => $page->uri(),

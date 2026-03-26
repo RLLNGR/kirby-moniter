@@ -5,7 +5,7 @@ use Kirby\Http\Response;
 
 Kirby::plugin('rllngr/kirby-moniter', [
     'info' => [
-        'version' => '1.1.0',
+        'version' => '1.1.2',
     ],
     'routes' => [
         [
@@ -67,6 +67,7 @@ Kirby::plugin('rllngr/kirby-moniter', [
 
                 return Response::json([
                     'kirby'   => $kirbyVersion,
+                    'php'     => PHP_VERSION,
                     'plugins' => $plugins,
                     'content' => [
                         'last_modified' => $lastModified,

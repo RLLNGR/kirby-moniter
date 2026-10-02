@@ -39,6 +39,8 @@ Header: X-Moniter-Key: <key>
 ```json
 {
   "kirby": "5.3.2",
+  "php": "8.3.0",
+  "stats": true,
   "plugins": {
     "author/plugin": "1.2.0"
   }
@@ -52,6 +54,59 @@ Header: X-Moniter-Key: <key>
 ```
 
 HTTP `401`
+
+## Page views (cookieless)
+
+Since v1.2.0 the plugin counts page views **without cookies or identifiers**. Stored per day: page path + view count, and the referring domain for external visits. No IP, no User-Agent, no cookie — so no consent banner is needed.
+
+These are **page views, not visitors**: without an identifier, unique visitors cannot be counted.
+
+- **Kirby sites**: nothing to do. A `<script src="/moniter/beacon.js" defer>` is added to every HTML page (works with the page cache and with a `script-src 'self'` CSP).
+- **Filtered at count time**: bots / monitoring tools (by User-Agent, never stored), logged-in Panel users, foreign origins, Panel / API / media paths, query strings.
+- **Storage**: SQLite in `site/logs/moniter/stats.sqlite` (needs `pdo_sqlite`), 400 days retention.
+
+```php
+return [
+    'moniter.stats'         => true,                       // false to disable
+    'moniter.stats.origins' => ['https://www.example.com'], // headless fronts allowed to send hits
+];
+```
+
+### Headless / Nuxt
+
+Add the front's URL to `moniter.stats.origins`, then create `plugins/moniter.client.ts`:
+
+```ts
+export default defineNuxtPlugin((nuxtApp) => {
+  // e.g. https://cms.example.com/moniter/hit
+  const endpoint = useRuntimeConfig().public.moniterHit as string
+  if (!endpoint) return
+  let last = ''
+  let referrer = document.referrer
+  nuxtApp.hook('page:finish', () => {
+    const p = location.pathname
+    if (p === last) return
+    last = p
+    navigator.sendBeacon(endpoint, JSON.stringify({ p, r: referrer }))
+    referrer = '' // only the landing page carries the external referrer
+  })
+})
+```
+
+If the front has a CSP, allow the CMS domain in `connect-src`.
+
+### Export
+
+```
+GET /moniter/stats?since=YYYY-MM-DD
+Header: X-Moniter-Key: <key>
+```
+
+```json
+{ "since": "2026-09-01", "today": "2026-10-02",
+  "pages": [{ "d": "2026-10-02", "p": "/projets", "v": 12 }],
+  "referrers": [{ "d": "2026-10-02", "h": "google.com", "v": 3 }] }
+```
 
 ## Security
 

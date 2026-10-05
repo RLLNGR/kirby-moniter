@@ -15,7 +15,7 @@ function moniterAuthorized(): bool
 
 Kirby::plugin('rllngr/kirby-moniter', [
     'info' => [
-        'version' => '1.2.0',
+        'version' => '1.2.1',
     ],
     'hooks' => [
         // Ajoute le beacon aux pages HTML rendues par Kirby (compatible cache de pages)
@@ -78,7 +78,8 @@ Kirby::plugin('rllngr/kirby-moniter', [
                 foreach ($kirby->plugins() as $plugin) {
                     $info    = $plugin->info();
                     $name    = $info['name'] ?? $plugin->name();
-                    $version = $info['version'] ?? null;
+                    // version() lit composer/installed.php : fiable même sans champ "version" dans composer.json
+                    $version = $plugin->version();
                     $plugins[$name] = $version;
                 }
 

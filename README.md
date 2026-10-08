@@ -59,6 +59,8 @@ HTTP `401`
 
 Since v1.2.0 the plugin counts page views **without cookies or identifiers**. Stored per day: page path + view count, and the referring domain for external visits. No IP, no User-Agent, no cookie — so no consent banner is needed.
 
+Since v1.3.0 it also stores, per page and day, the **seconds the page stayed visible** (only while the tab is in the foreground, capped at 30 min per view), and the browser's **time zone** (`Europe/Paris`), from which Moniter derives the country — the IP address is never read.
+
 These are **page views, not visitors**: without an identifier, unique visitors cannot be counted.
 
 - **Kirby sites**: nothing to do. A `<script src="/moniter/beacon.js" defer>` is added to every HTML page (works with the page cache and with a `script-src 'self'` CSP).
@@ -81,13 +83,27 @@ export default defineNuxtPlugin((nuxtApp) => {
   // e.g. https://cms.example.com/moniter/hit
   const endpoint = useRuntimeConfig().public.moniterHit as string
   if (!endpoint) return
-  let last = ''
-  let referrer = document.referrer
+  const timeUrl = endpoint.replace(/hit$/, 'time')
+  const z = Intl.DateTimeFormat().resolvedOptions().timeZone || ''
+  const visible = () => document.visibilityState === 'visible'
+  let last = '', referrer = document.referrer, ms = 0, sent = 0, since = visible() ? Date.now() : 0
+
+  // Sends the visible time accumulated on the current page since the last send
+  const flush = () => {
+    if (since) { ms += Date.now() - since; since = visible() ? Date.now() : 0 }
+    const n = Math.min(Math.round(ms / 1000), 1800), d = n - sent
+    if (last && d > 0) { sent = n; navigator.sendBeacon(timeUrl, JSON.stringify({ p: last, t: d })) }
+  }
+  document.addEventListener('visibilitychange', () => { if (visible()) since = Date.now(); else flush() })
+  addEventListener('pagehide', flush)
+
   nuxtApp.hook('page:finish', () => {
     const p = location.pathname
     if (p === last) return
+    flush()
+    ms = 0; sent = 0; since = visible() ? Date.now() : 0
     last = p
-    navigator.sendBeacon(endpoint, JSON.stringify({ p, r: referrer }))
+    navigator.sendBeacon(endpoint, JSON.stringify({ p, r: referrer, z }))
     referrer = '' // only the landing page carries the external referrer
   })
 })
@@ -104,8 +120,9 @@ Header: X-Moniter-Key: <key>
 
 ```json
 { "since": "2026-09-01", "today": "2026-10-02",
-  "pages": [{ "d": "2026-10-02", "p": "/projets", "v": 12 }],
-  "referrers": [{ "d": "2026-10-02", "h": "google.com", "v": 3 }] }
+  "pages": [{ "d": "2026-10-02", "p": "/projets", "v": 12, "s": 540 }],
+  "referrers": [{ "d": "2026-10-02", "h": "google.com", "v": 3 }],
+  "zones": [{ "d": "2026-10-02", "z": "Europe/Paris", "v": 11 }] }
 ```
 
 ## Security

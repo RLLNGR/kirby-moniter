@@ -59,7 +59,7 @@ HTTP `401`
 
 Since v1.2.0 the plugin counts page views **without cookies or identifiers**. Stored per day: page path + view count, and the referring domain for external visits. No IP, no User-Agent, no cookie — so no consent banner is needed.
 
-Since v1.3.0 it also stores, per page and day, the **seconds the page stayed visible** (only while the tab is in the foreground, capped at 30 min per view), and the browser's **time zone** (`Europe/Paris`), from which Moniter derives the country — the IP address is never read.
+Since v1.3.0 it also stores, per page and day, the **seconds the page stayed visible** (only while the tab is in the foreground, capped at 30 min per view), the browser's **time zone** (`Europe/Paris`), from which Moniter derives the country, and the browser's **language** (`fr`, `en`… — region dropped). The IP address is never read.
 
 These are **page views, not visitors**: without an identifier, unique visitors cannot be counted.
 
@@ -103,7 +103,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     flush()
     ms = 0; sent = 0; since = visible() ? Date.now() : 0
     last = p
-    navigator.sendBeacon(endpoint, JSON.stringify({ p, r: referrer, z }))
+    navigator.sendBeacon(endpoint, JSON.stringify({ p, r: referrer, z, l: navigator.language || '' }))
     referrer = '' // only the landing page carries the external referrer
   })
 })
@@ -122,7 +122,8 @@ Header: X-Moniter-Key: <key>
 { "since": "2026-09-01", "today": "2026-10-02",
   "pages": [{ "d": "2026-10-02", "p": "/projets", "v": 12, "s": 540 }],
   "referrers": [{ "d": "2026-10-02", "h": "google.com", "v": 3 }],
-  "zones": [{ "d": "2026-10-02", "z": "Europe/Paris", "v": 11 }] }
+  "zones": [{ "d": "2026-10-02", "z": "Europe/Paris", "v": 11 }],
+  "langs": [{ "d": "2026-10-02", "l": "fr", "v": 10 }] }
 ```
 
 ## Security

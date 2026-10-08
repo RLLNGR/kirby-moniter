@@ -9,7 +9,7 @@ use Throwable;
  * Compteur de pages vues sans cookie ni identifiant.
  *
  * On ne stocke que : jour, chemin de la page, nombre de vues, secondes passées
- * (+ domaine d'origine pour les visites venant d'un autre site, + fuseau horaire du navigateur).
+ * (+ domaine d'origine pour les visites venant d'un autre site, + fuseau horaire et langue du navigateur).
  * Aucune IP, aucun User-Agent, aucun cookie — rien qui permette
  * de reconnaître un visiteur.
  */
@@ -52,6 +52,13 @@ class Stats
             tz   TEXT NOT NULL,
             n    INTEGER NOT NULL DEFAULT 0,
             PRIMARY KEY (day, tz)
+        ) WITHOUT ROWID');
+        // 1.3 : langue principale du navigateur (« fr », « en »…)
+        $db->exec('CREATE TABLE IF NOT EXISTS langs (
+            day  TEXT NOT NULL,
+            lang TEXT NOT NULL,
+            n    INTEGER NOT NULL DEFAULT 0,
+            PRIMARY KEY (day, lang)
         ) WITHOUT ROWID');
         $db->exec('CREATE TABLE IF NOT EXISTS referrers (
             day  TEXT NOT NULL,
@@ -96,7 +103,7 @@ class Stats
         return $path;
     }
 
-    public static function record(string $path, ?string $referrer, string $siteHost, ?string $tz = null): void
+    public static function record(string $path, ?string $referrer, string $siteHost, ?string $tz = null, ?string $lang = null): void
     {
         $db  = static::db();
         $day = date('Y-m-d');
@@ -121,12 +128,21 @@ class Stats
                ->execute([$day, $tz]);
         }
 
+        // « fr-FR » → « fr » : la langue seule, la région ne dit rien de plus que le fuseau
+        $lang = $lang ? strtolower(explode('-', str_replace('_', '-', $lang))[0]) : '';
+        if (preg_match('/^[a-z]{2,3}$/', $lang)) {
+            $db->prepare('INSERT INTO langs (day, lang, n) VALUES (?, ?, 1)
+                          ON CONFLICT(day, lang) DO UPDATE SET n = n + 1')
+               ->execute([$day, $lang]);
+        }
+
         // Ménage occasionnel
         if (random_int(1, 200) === 1) {
             $limit = date('Y-m-d', strtotime('-' . static::RETENTION_DAYS . ' days'));
             $db->prepare('DELETE FROM views WHERE day < ?')->execute([$limit]);
             $db->prepare('DELETE FROM referrers WHERE day < ?')->execute([$limit]);
             $db->prepare('DELETE FROM zones WHERE day < ?')->execute([$limit]);
+            $db->prepare('DELETE FROM langs WHERE day < ?')->execute([$limit]);
         }
     }
 
@@ -146,6 +162,8 @@ class Stats
         $refs->execute([$since]);
         $zones = $db->prepare('SELECT day AS d, tz AS z, n AS v FROM zones WHERE day >= ? ORDER BY day');
         $zones->execute([$since]);
+        $langs = $db->prepare('SELECT day AS d, lang AS l, n AS v FROM langs WHERE day >= ? ORDER BY day');
+        $langs->execute([$since]);
 
         return [
             'since'     => $since,
@@ -153,6 +171,7 @@ class Stats
             'pages'     => $pages->fetchAll(PDO::FETCH_ASSOC),
             'referrers' => $refs->fetchAll(PDO::FETCH_ASSOC),
             'zones'     => $zones->fetchAll(PDO::FETCH_ASSOC),
+            'langs'     => $langs->fetchAll(PDO::FETCH_ASSOC),
         ];
     }
 
@@ -183,7 +202,8 @@ class Stats
                 $body['p'],
                 is_string($body['r'] ?? null) ? $body['r'] : null,
                 (string) parse_url($origin, PHP_URL_HOST),
-                is_string($body['z'] ?? null) ? $body['z'] : null
+                is_string($body['z'] ?? null) ? $body['z'] : null,
+                is_string($body['l'] ?? null) ? $body['l'] : null
             );
         } catch (Throwable $e) {
             // silencieux : les stats ne doivent jamais casser le site

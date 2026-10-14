@@ -59,7 +59,15 @@ HTTP `401`
 
 Since v1.2.0 the plugin counts page views **without cookies or identifiers**. Stored per day: page path + view count, and the referring domain for external visits. No IP, no User-Agent, no cookie — so no consent banner is needed.
 
-Since v1.3.0 it also stores, per page and day, the **seconds the page stayed visible** (only while the tab is in the foreground, capped at 30 min per view), the browser's **time zone** (`Europe/Paris`), from which Moniter derives the country, and the browser's **language** (`fr`, `en`… — region dropped). The IP address is never read.
+Since v1.3.0 it also stores the **reading time** per page, the browser's **time zone** (`Europe/Paris`) and **language** (`fr`). Since v1.4.0:
+
+- **Reading time** only counts while the tab is visible **and** the visitor interacted (scroll, pointer, keyboard, touch) in the last 30 s — an idle open tab stops counting. Capped at 30 min per view.
+- **Country**: time zone + region of the browser language (`fr-BE` → BE), stored together. Moniter uses the time zone first; the region only decides between the countries sharing that zone, or when the zone is unknown (`UTC` in privacy browsers). The IP address is never read.
+- **Device**: `mobile` / `tablet` / `desktop`, decided in the browser from the primary pointer (touch or not) and the screen size — more accurate than the User-Agent (iPads present themselves as Macs).
+- **Entries & bounce**: a view is an *entry* when it is the first load of the tab and comes from another site or from nowhere (reloads excluded). The entry path is kept in `sessionStorage` for the life of the tab; if a second page is viewed, the entry is marked as *continued*. Bounce = entries not continued. Entries without referrer = **direct**. `utm_campaign` (or `utm_source`) of entries = **campaigns**.
+- **Actions**: clicks on `tel:` (number), `mailto:` (address), links to another site (domain only) and files (`.pdf`, `.docx`, `.zip`… file name only).
+
+Each counter lives in its own table, per day: they are never combined into a per-visitor record. `sessionStorage` is the only browser storage, it holds no identifier and is wiped when the tab closes.
 
 These are **page views, not visitors**: without an identifier, unique visitors cannot be counted.
 
@@ -76,40 +84,20 @@ return [
 
 ### Headless / Nuxt
 
-Add the front's URL to `moniter.stats.origins`, then create `plugins/moniter.client.ts`:
+Since v1.4.0 the beacon follows client-side navigation (`history.pushState`), so a front only needs the script, loaded from the CMS. Add the front's URL to `moniter.stats.origins`, then in `nuxt.config.ts`:
 
 ```ts
-export default defineNuxtPlugin((nuxtApp) => {
-  // e.g. https://cms.example.com/moniter/hit
-  const endpoint = useRuntimeConfig().public.moniterHit as string
-  if (!endpoint) return
-  const timeUrl = endpoint.replace(/hit$/, 'time')
-  const z = Intl.DateTimeFormat().resolvedOptions().timeZone || ''
-  const visible = () => document.visibilityState === 'visible'
-  let last = '', referrer = document.referrer, ms = 0, sent = 0, since = visible() ? Date.now() : 0
-
-  // Sends the visible time accumulated on the current page since the last send
-  const flush = () => {
-    if (since) { ms += Date.now() - since; since = visible() ? Date.now() : 0 }
-    const n = Math.min(Math.round(ms / 1000), 1800), d = n - sent
-    if (last && d > 0) { sent = n; navigator.sendBeacon(timeUrl, JSON.stringify({ p: last, t: d })) }
-  }
-  document.addEventListener('visibilitychange', () => { if (visible()) since = Date.now(); else flush() })
-  addEventListener('pagehide', flush)
-
-  nuxtApp.hook('page:finish', () => {
-    const p = location.pathname
-    if (p === last) return
-    flush()
-    ms = 0; sent = 0; since = visible() ? Date.now() : 0
-    last = p
-    navigator.sendBeacon(endpoint, JSON.stringify({ p, r: referrer, z, l: navigator.language || '' }))
-    referrer = '' // only the landing page carries the external referrer
-  })
+export default defineNuxtConfig({
+  app: {
+    head: {
+      // e.g. https://cms.example.com/moniter/beacon.js
+      script: [{ src: process.env.NUXT_PUBLIC_MONITER_BEACON, defer: true }],
+    },
+  },
 })
 ```
 
-If the front has a CSP, allow the CMS domain in `connect-src`.
+If the front has a CSP, allow the CMS domain in `script-src` and `connect-src`. The `moniter.client.ts` plugin from earlier versions keeps working (page views, time, country, language) but sends no device, entries or actions: replace it with the script.
 
 ### Export
 
@@ -119,12 +107,18 @@ Header: X-Moniter-Key: <key>
 ```
 
 ```json
-{ "since": "2026-09-01", "today": "2026-10-02",
+{ "since": "2026-09-01", "today": "2026-10-02", "version": 2,
   "pages": [{ "d": "2026-10-02", "p": "/projets", "v": 12, "s": 540 }],
   "referrers": [{ "d": "2026-10-02", "h": "google.com", "v": 3 }],
-  "zones": [{ "d": "2026-10-02", "z": "Europe/Paris", "v": 11 }],
-  "langs": [{ "d": "2026-10-02", "l": "fr", "v": 10 }] }
+  "zones": [{ "d": "2026-10-02", "z": "Europe/Paris", "r": "FR", "v": 11 }],
+  "langs": [{ "d": "2026-10-02", "l": "fr", "v": 10 }],
+  "devices": [{ "d": "2026-10-02", "t": "mobile", "v": 8 }],
+  "entries": [{ "d": "2026-10-02", "p": "/", "v": 6, "c": 2, "x": 3 }],
+  "actions": [{ "d": "2026-10-02", "t": "tel", "g": "+33233000000", "v": 1 }],
+  "campaigns": [{ "d": "2026-10-02", "c": "newsletter-octobre", "v": 2 }] }
 ```
+
+`entries`: `v` arrivals on the page, `c` of which continued to another page, `x` of which had no referrer.
 
 ## Security
 

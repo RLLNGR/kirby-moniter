@@ -155,7 +155,7 @@ class Stats
 
     /**
      * Une page vue. $hit : p (chemin, déjà normalisé), r (référent), z (fuseau), l (langue « fr-BE »),
-     * d (appareil), e (1 = arrivée sur le site, envoyé par le beacon ≥ 1.4), c (campagne).
+     * g (région tirée de la liste des langues), d (appareil), e (1 = arrivée sur le site, envoyé par le beacon ≥ 1.4), c (campagne).
      */
     public static function record(array $hit, string $siteHost): void
     {
@@ -179,7 +179,8 @@ class Stats
         // « fr-BE » → langue « fr », région « BE »
         $parts  = explode('-', str_replace('_', '-', $str('l')));
         $lang   = strtolower($parts[0]);
-        $region = strtoupper($parts[1] ?? '');
+        // 1.4.1 : `g` = première région de navigator.languages (['fr', 'fr-BE'] → BE) ; sinon celle de la langue
+        $region = strtoupper($str('g') ?: ($parts[1] ?? ''));
         if (!preg_match('/^[A-Z]{2}$/', $region)) $region = '';
         $tz = $str('z');
         if (!preg_match('#^[A-Za-z_]+(/[A-Za-z0-9_+\-]+){0,2}$#', $tz) || strlen($tz) > 40) $tz = '';

@@ -32,6 +32,17 @@
     return coarse ? (small < 600 ? 'mobile' : 'tablet') : 'desktop'
   }
 
+  // Région : la première trouvée dans la liste des langues du navigateur.
+  // ['fr', 'fr-BE', 'en'] → BE, alors que navigator.language (« fr ») n'en dit rien.
+  function region() {
+    var list = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || '']
+    for (var i = 0; i < list.length; i++) {
+      var m = /^[a-z]{2,3}(?:[-_][a-z]{4})?[-_]([a-z]{2})(?:$|[-_])/i.exec(list[i] || '')
+      if (m) return m[1].toUpperCase()
+    }
+    return ''
+  }
+
   function campaign() {
     var q = new URLSearchParams(location.search)
     return q.get('utm_campaign') || q.get('utm_source') || ''
@@ -68,7 +79,7 @@
     // Arrivée sur le site : premier chargement, venu d'ailleurs (ou de nulle part), hors rechargement
     var entry = first && !reload && refHost !== location.host
 
-    var data = { p: path, r: entry ? referrer : '', z: tz, l: navigator.language || '', d: device(), e: entry ? 1 : 0 }
+    var data = { p: path, r: entry ? referrer : '', z: tz, l: navigator.language || '', g: region(), d: device(), e: entry ? 1 : 0 }
     if (entry) data.c = campaign()
     send('hit', data)
 

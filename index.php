@@ -15,7 +15,7 @@ function moniterAuthorized(): bool
 
 Kirby::plugin('rllngr/kirby-moniter', [
     'info' => [
-        'version' => '1.3.0',
+        'version' => '1.4.0',
     ],
     'hooks' => [
         // Ajoute le beacon aux pages HTML rendues par Kirby (compatible cache de pages)
@@ -28,36 +28,26 @@ Kirby::plugin('rllngr/kirby-moniter', [
     ],
     'routes' => [
         [
-            // Script du beacon : chemin, référent, fuseau horaire et langue du navigateur à l'arrivée ; au départ, le temps où la page
-            // est restée visible (plafonné à 30 min). Aucun identifiant, rien n'est stocké côté navigateur.
+            // Script du beacon (voir src/beacon.js) : aucun identifiant, seul le chemin de la page d'entrée
+            // est gardé en sessionStorage le temps de l'onglet, pour mesurer le rebond.
             'pattern' => 'moniter/beacon.js',
             'method'  => 'GET',
             'action'  => function () {
-                $js = "(function(){var s=document.currentScript;if(!s)return;"
-                    . "var b=s.src.replace(/beacon\\.js.*$/,''),p=location.pathname,z='';"
-                    . "function send(u,d){try{navigator.sendBeacon?navigator.sendBeacon(u,d):fetch(u,{method:'POST',body:d,keepalive:true})}catch(e){}}"
-                    . "try{z=Intl.DateTimeFormat().resolvedOptions().timeZone||''}catch(e){}"
-                    . "send(b+'hit',JSON.stringify({p:p,r:document.referrer,z:z,l:navigator.language||''}));"
-                    . "var t=0,v=document.visibilityState==='visible'?Date.now():0,sent=0;"
-                    . "function flush(){if(v){t+=Date.now()-v;v=0}var n=Math.min(Math.round(t/1000),1800),d=n-sent;if(d>0){sent=n;send(b+'time',JSON.stringify({p:p,t:d}))}}"
-                    . "document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')v=Date.now();else flush()});"
-                    . "addEventListener('pagehide',flush);})();";
-                return new Response($js, 'application/javascript', 200, ['Cache-Control' => 'public, max-age=86400']);
+                return new Response(file_get_contents(__DIR__ . '/src/beacon.js'), 'application/javascript', 200, ['Cache-Control' => 'public, max-age=86400']);
             },
         ],
         [
-            'pattern' => 'moniter/hit',
+            'pattern' => 'moniter/(hit|time|continue|action)',
             'method'  => 'POST',
-            'action'  => function () {
-                if (option('moniter.stats', true)) Stats::handleHit();
-                return new Response('', 'text/plain', 204);
-            },
-        ],
-        [
-            'pattern' => 'moniter/time',
-            'method'  => 'POST',
-            'action'  => function () {
-                if (option('moniter.stats', true)) Stats::handleTime();
+            'action'  => function (string $kind) {
+                if (option('moniter.stats', true)) {
+                    match ($kind) {
+                        'hit'      => Stats::handleHit(),
+                        'time'     => Stats::handleTime(),
+                        'continue' => Stats::handleContinue(),
+                        'action'   => Stats::handleAction(),
+                    };
+                }
                 return new Response('', 'text/plain', 204);
             },
         ],

@@ -39,6 +39,8 @@ class Stats
         $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $db->exec('PRAGMA busy_timeout = 3000');
         $db->exec('PRAGMA journal_mode = WAL');
+        // En WAL, NORMAL reste sûr (pas de corruption) et évite un fsync à chaque écriture
+        $db->exec('PRAGMA synchronous = NORMAL');
         $db->exec('CREATE TABLE IF NOT EXISTS views (
             day  TEXT NOT NULL,
             path TEXT NOT NULL,
@@ -158,6 +160,20 @@ class Stats
      * g (région tirée de la liste des langues), d (appareil), e (1 = arrivée sur le site, envoyé par le beacon ≥ 1.4), c (campagne).
      */
     public static function record(array $hit, string $siteHost): void
+    {
+        // Toutes les tables d'une page vue en une seule écriture disque
+        $db = static::db();
+        $db->beginTransaction();
+        try {
+            static::recordRows($hit, $siteHost);
+            $db->commit();
+        } catch (Throwable $e) {
+            $db->rollBack();
+            throw $e;
+        }
+    }
+
+    private static function recordRows(array $hit, string $siteHost): void
     {
         $day  = date('Y-m-d');
         $path = $hit['p'];

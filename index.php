@@ -15,7 +15,7 @@ function moniterAuthorized(): bool
 
 Kirby::plugin('rllngr/kirby-moniter', [
     'info' => [
-        'version' => '1.4.1',
+        'version' => '1.4.2',
     ],
     'hooks' => [
         // Ajoute le beacon aux pages HTML rendues par Kirby (compatible cache de pages)

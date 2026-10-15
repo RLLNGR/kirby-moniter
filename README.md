@@ -120,6 +120,24 @@ Header: X-Moniter-Key: <key>
 
 `entries`: `v` arrivals on the page, `c` of which continued to another page, `x` of which had no referrer.
 
+## Panel view (Kirby ≥ 4)
+
+Since v1.5.0 the Panel gets an **Audience** entry in its menu (`/panel/audience`). It reads `site/logs/moniter/stats.sqlite` directly on the site: it does not need Moniter and shows today's views right away.
+
+- Key figures for 7 days, 30 days, this month, 90 days or 1 year, compared to the previous period of the same length (only when that period was fully measured).
+- Page views per day (per month over 1 year), most read pages, entry pages and bounce, sources, referring sites, devices, languages, clicks, campaigns.
+- Page views per country on a world map (Natural Earth 110m, public domain, `assets/world-110m.json`, loaded only when there are countries).
+- Same calculations and same look as the Moniter dashboard and its monthly report (cream, ink bars, coloured cards). Follows the Panel's light / dark theme on Kirby 5.
+- Labels in French and English (other Panel languages fall back to English).
+
+```php
+return [
+    'moniter.panel' => true,                 // false to hide it, or a list of roles: ['admin', 'editor']
+];
+```
+
+Kirby 3 sites keep working, without the Panel view.
+
 ## Security
 
 - Key comparison uses `hash_equals()` (timing attack protection)

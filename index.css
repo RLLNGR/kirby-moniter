@@ -1,0 +1,377 @@
+/*
+ * Vue Audience du Panel, à l'identité de Moniter et du rapport mensuel :
+ * crème, blocs blancs sans filet, barres d'encre de 45px qui parlent en minuscules, coins carrés.
+ * Clair / sombre : light-dark() suit le `color-scheme` du Panel (Kirby 5) ; Kirby 4 n'en a pas et reste clair.
+ */
+
+.k-moniter-view {
+  --m-cream: #faf5ef;
+  --m-ink: #1a1a1a;
+  --m-blue: #3264f9;
+  --m-green: #009c31;
+  --m-magenta: #db00cf;
+  --m-orange: #ea5d0e;
+
+  --m-bg: light-dark(var(--m-cream), var(--m-ink));
+  --m-text: light-dark(var(--m-ink), var(--m-cream));
+  --m-surface: light-dark(#fff, #262524);
+  --m-bar-bg: light-dark(var(--m-ink), var(--m-cream));
+  --m-bar-text: light-dark(var(--m-cream), var(--m-ink));
+  /* Le bleu tombe trop bas sur le bloc sombre : éclairci quand il sert de texte ou de trait */
+  --m-accent: light-dark(var(--m-blue), color-mix(in srgb, var(--m-blue) 75%, var(--m-cream)));
+  --m-muted: color-mix(in srgb, var(--m-text) 58%, var(--m-bg));
+  --m-hover: color-mix(in srgb, var(--m-text) 6%, var(--m-bg));
+  --m-row: 45px;
+  --m-gutter: 15px;
+  --m-sans: 'KMR Waldenburg', Arial, 'Helvetica Neue', Helvetica, sans-serif;
+  --m-mono: ui-monospace, Consolas, monospace;
+}
+
+.k-moniter-view .k-panel-main {
+  background: var(--m-bg);
+}
+
+.k-moniter {
+  font-family: var(--m-sans);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--m-text);
+}
+.k-moniter *,
+.k-moniter *::before,
+.k-moniter *::after {
+  border-radius: 0;
+}
+.k-moniter :focus,
+.k-moniter :focus-visible {
+  outline: none;
+}
+.k-moniter h1,
+.k-moniter h2 {
+  font-size: inherit;
+  font-weight: 400;
+}
+
+/* ── Barres d'encre ─────────────────────────────── */
+.k-moniter-ink {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0 1rem;
+  min-height: var(--m-row);
+  padding: 0 var(--m-gutter);
+  background: var(--m-bar-bg);
+  color: var(--m-bar-text);
+  text-transform: lowercase;
+}
+.k-moniter-header {
+  margin-bottom: var(--m-gutter);
+}
+.k-moniter-periods {
+  display: flex;
+  flex-wrap: wrap;
+}
+.k-moniter-periods button {
+  min-height: var(--m-row);
+  padding: 0 0.7rem;
+  color: color-mix(in srgb, var(--m-bar-text) 60%, var(--m-bar-bg));
+  font: inherit;
+  text-transform: lowercase;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+.k-moniter-periods button:hover {
+  color: var(--m-bar-text);
+}
+.k-moniter-periods button[aria-current] {
+  background: var(--m-bg);
+  color: var(--m-text);
+}
+/* Mobile : le titre au-dessus, les périodes sur toute la largeur, sur une ligne */
+@media (max-width: 640px) {
+  .k-moniter-header h1 {
+    display: flex;
+    align-items: center;
+    min-height: var(--m-row);
+  }
+  .k-moniter-periods {
+    flex-wrap: nowrap;
+    width: calc(100% + 2 * var(--m-gutter));
+    margin: 0 calc(-1 * var(--m-gutter));
+  }
+  .k-moniter-periods button {
+    flex: 1;
+    padding: 0 0.25rem;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+}
+.k-moniter-footer {
+  margin-top: calc(var(--m-gutter) * 3);
+}
+.k-moniter-footer a {
+  color: inherit;
+  text-decoration: none;
+}
+.k-moniter-footer a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+/* ── Blocs ──────────────────────────────────────── */
+.k-moniter-block {
+  min-width: 0;
+  padding: 1.25rem 1.5rem;
+  background: var(--m-surface);
+}
+.k-moniter-caption {
+  margin-bottom: 0.5rem;
+  color: var(--m-muted);
+  font-size: 0.88rem;
+  text-transform: lowercase;
+}
+.k-moniter-message {
+  color: var(--m-muted);
+  text-align: center;
+  padding: 3rem 1.5rem;
+}
+.k-moniter-muted,
+.k-moniter-compared,
+.k-moniter-privacy {
+  color: var(--m-muted);
+}
+.k-moniter-compared {
+  margin: 0.4rem 0 var(--m-gutter);
+  font-size: 0.78rem;
+}
+.k-moniter-privacy {
+  margin-top: var(--m-gutter);
+  max-width: 50rem;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+/* ── Pastilles (les cartes du rapport) ──────────── */
+.k-moniter-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 12px;
+}
+.k-moniter-kpi {
+  --kpi: var(--m-blue);
+  --kpi-ink: var(--kpi);
+  --kpi-legend: var(--m-cream);
+  --kpi-dot: var(--m-cream);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 16px;
+  background: var(--kpi);
+}
+.k-moniter-kpi[data-color="green"] { --kpi: var(--m-green); }
+.k-moniter-kpi[data-color="magenta"] { --kpi: var(--m-magenta); }
+.k-moniter-kpi[data-color="orange"] { --kpi: var(--m-orange); }
+/* Le noir est celui des barres : il s'inverse en sombre, et son chiffre est à l'encre */
+.k-moniter-kpi[data-color="black"] {
+  --kpi: var(--m-bar-bg);
+  --kpi-dot: var(--m-bg);
+  --kpi-ink: var(--m-text);
+  --kpi-legend: var(--m-bar-text);
+}
+.k-moniter-kpi-dot {
+  display: grid;
+  grid-template-rows: 24px 48px 24px;
+  justify-items: center;
+  width: 96px;
+  height: 96px;
+  border-radius: 50% !important;
+  background: var(--kpi-dot);
+  color: var(--kpi-ink);
+  line-height: 1;
+}
+.k-moniter-kpi-value {
+  grid-row: 2;
+  align-self: center;
+  font-size: 32px;
+  white-space: nowrap;
+}
+.k-moniter-kpi-dot[data-size="m"] .k-moniter-kpi-value { font-size: 24px; }
+.k-moniter-kpi-dot[data-size="s"] .k-moniter-kpi-value { font-size: 18px; }
+.k-moniter-kpi-unit {
+  grid-row: 3;
+  font-size: 13px;
+}
+.k-moniter-kpi-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--m-row);
+  padding: 0.4rem 6px;
+  color: var(--kpi-legend);
+  font-size: 15px;
+  line-height: 1.15;
+  text-align: center;
+  text-transform: lowercase;
+}
+.k-moniter-kpi-delta {
+  margin-top: 0.15rem;
+  font-family: var(--m-mono);
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* ── Histogramme ────────────────────────────────── */
+.k-moniter-chart {
+  position: relative;
+  padding-top: 1rem;
+}
+.k-moniter-chart-max {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: var(--m-muted);
+  font-family: var(--m-mono);
+  font-size: 0.7rem;
+}
+.k-moniter-chart-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 160px;
+  border-bottom: 1px solid var(--m-bg);
+}
+.k-moniter-chart-col {
+  display: flex;
+  flex: 1;
+  align-items: flex-end;
+  min-width: 0;
+  height: 100%;
+}
+.k-moniter-chart-bar {
+  width: 100%;
+  background: var(--m-accent);
+  opacity: 0.85;
+  transition: opacity 0.1s;
+}
+.k-moniter-chart-bar.zero {
+  min-height: 1px;
+  background: var(--m-bg);
+}
+.k-moniter-chart-bar.active {
+  opacity: 1;
+}
+.k-moniter-chart-bars:hover .k-moniter-chart-bar:not(.active) {
+  opacity: 0.45;
+}
+.k-moniter-chart-axis {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.3rem;
+  color: var(--m-muted);
+  font-size: 0.7rem;
+}
+.k-moniter-tip {
+  position: fixed;
+  z-index: 9999;
+  transform: translate(-50%, calc(-100% - 8px));
+  padding: 0.35rem 0.6rem;
+  background: var(--m-surface);
+  border: 1px solid var(--m-bg);
+  color: var(--m-text);
+  font-family: var(--m-sans);
+  font-size: 0.78rem;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* ── Grille des listes ──────────────────────────── */
+.k-moniter-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+.k-moniter-wide { grid-column: span 2; }
+.k-moniter-full { grid-column: 1 / -1; }
+@media (max-width: 900px) {
+  .k-moniter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .k-moniter-wide { grid-column: 1 / -1; }
+}
+@media (max-width: 640px) {
+  .k-moniter-grid { grid-template-columns: 1fr; }
+}
+
+.k-moniter-list {
+  display: grid;
+  gap: 2px;
+  font-size: 0.82rem;
+}
+.k-moniter-list li {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.25rem 0.5rem;
+}
+.k-moniter-list-bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--m-hover);
+}
+.k-moniter-list-name {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.k-moniter-list-note,
+.k-moniter-list-value,
+.k-moniter-list-share {
+  position: relative;
+  flex: none;
+  color: var(--m-muted);
+  font-family: var(--m-mono);
+  white-space: nowrap;
+}
+.k-moniter-list-note,
+.k-moniter-list-share {
+  font-size: 0.75rem;
+}
+.k-moniter-list-share {
+  width: 3.2rem;
+  text-align: right;
+}
+
+/* ── Carte ──────────────────────────────────────── */
+.k-moniter-map-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+  align-items: center;
+}
+@media (max-width: 640px) {
+  .k-moniter-map-layout { grid-template-columns: 1fr; }
+}
+.k-moniter-map svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.k-moniter-map path {
+  fill: color-mix(in srgb, var(--m-text) 9%, var(--m-surface));
+  stroke: var(--m-surface);
+  stroke-width: 0.5;
+}
+.k-moniter-map path.active {
+  stroke: var(--m-text);
+  stroke-width: 1;
+}
+.k-moniter-map-placeholder {
+  aspect-ratio: 1000 / 520;
+  background: var(--m-hover);
+}

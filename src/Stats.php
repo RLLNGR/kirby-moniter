@@ -28,7 +28,7 @@ class Stats
         return extension_loaded('pdo_sqlite');
     }
 
-    private static function db(): PDO
+    public static function db(): PDO
     {
         if (static::$db) return static::$db;
 

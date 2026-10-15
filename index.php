@@ -3,8 +3,10 @@
 use Kirby\Cms\App as Kirby;
 use Kirby\Http\Response;
 use Rllngr\Moniter\Stats;
+use Rllngr\Moniter\Summary;
 
 require_once __DIR__ . '/src/Stats.php';
+require_once __DIR__ . '/src/Summary.php';
 
 function moniterAuthorized(): bool
 {
@@ -13,9 +15,59 @@ function moniterAuthorized(): bool
     return !empty($key) && hash_equals($key, $provided);
 }
 
+/** Vue Audience du Panel : `moniter.panel` = true (tous), false (personne) ou une liste de rôles */
+function moniterPanelAccess(): bool
+{
+    $user   = kirby()->user();
+    $option = option('moniter.panel', true);
+    if (!$user || $option === false) return false;
+    return $option === true || in_array($user->role()->name(), (array) $option, true);
+}
+
 Kirby::plugin('rllngr/kirby-moniter', [
     'info' => [
-        'version' => '1.4.2',
+        'version' => '1.5.0',
+    ],
+    // Vue Audience dans le Panel (Kirby ≥ 4 : k-panel-inside n'existe pas en 3)
+    'areas' => version_compare(Kirby::version(), '4.0.0', '>=') ? [
+        'moniter' => fn () => [
+            'label' => t('moniter.audience'),
+            'icon'  => 'chart',
+            'menu'  => moniterPanelAccess(),
+            'link'  => 'audience',
+            'views' => [
+                [
+                    'pattern' => 'audience',
+                    'action'  => function () {
+                        if (!moniterPanelAccess()) {
+                            throw new Kirby\Exception\PermissionException(t('moniter.forbidden'));
+                        }
+                        $period = get('period', '30');
+                        $period = in_array($period, Summary::PERIODS, true) ? $period : '30';
+                        $error  = match (true) {
+                            !option('moniter.stats', true) => 'disabled',
+                            !Stats::available()            => 'sqlite',
+                            default                        => null,
+                        };
+                        return [
+                            'component' => 'k-moniter-audience-view',
+                            'title'     => t('moniter.audience'),
+                            'props'     => [
+                                'period' => $period,
+                                'error'  => $error,
+                                'stats'  => $error ? null : Summary::summary($period, kirby()->user()->language()),
+                                // Tracés des pays (Natural Earth 110m, domaine public), chargés seulement s'il y a des pays
+                                'map'    => kirby()->plugin('rllngr/kirby-moniter')->asset('world-110m.json')?->url(),
+                            ],
+                        ];
+                    },
+                ],
+            ],
+        ],
+    ] : [],
+    'translations' => [
+        'fr' => require __DIR__ . '/translations/fr.php',
+        'en' => require __DIR__ . '/translations/en.php',
     ],
     'hooks' => [
         // Ajoute le beacon aux pages HTML rendues par Kirby (compatible cache de pages)

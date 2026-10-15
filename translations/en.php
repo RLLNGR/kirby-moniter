@@ -1,0 +1,62 @@
+<?php
+
+return [
+    'moniter.audience'          => 'Audience',
+    'moniter.forbidden'         => "You don't have access to the site audience.",
+
+    'moniter.period.7'          => '7 days',
+    'moniter.period.30'         => '30 days',
+    'moniter.period.month'      => 'This month',
+    'moniter.period.90'         => '90 days',
+    'moniter.period.365'        => '1 year',
+    'moniter.compared'          => 'compared to',
+
+    'moniter.kpi.views'         => 'Page views',
+    'moniter.kpi.visits'        => 'Visits',
+    'moniter.kpi.pages_per_visit' => 'Pages per visit',
+    'moniter.kpi.avg_seconds'   => 'Time per page',
+    'moniter.kpi.bounce'        => 'Left after one page',
+    'moniter.kpi.previous'      => 'before: {value}',
+
+    'moniter.chart'             => 'Page views',
+    'moniter.chart.day'         => 'Page views per day',
+    'moniter.chart.month'       => 'Page views per month',
+    'moniter.countries.count'   => '{count} countries',
+    'moniter.view'              => 'view',
+    'moniter.views'             => 'views',
+
+    'moniter.top_pages'         => 'Most read pages',
+    'moniter.entry_pages'       => 'Entry pages',
+    'moniter.bounce'            => 'bounce',
+    'moniter.reading'           => 'Average reading time',
+    'moniter.sources'           => 'Sources',
+    'moniter.referrers'         => 'Referring sites',
+    'moniter.countries'         => 'Countries',
+    'moniter.devices'           => 'Devices',
+    'moniter.languages'         => 'Languages',
+    'moniter.actions'           => 'Clicks',
+    'moniter.campaigns'         => 'Campaigns',
+    'moniter.home'              => 'Home',
+    'moniter.other'             => 'Other',
+
+    'moniter.source.direct'     => 'Direct',
+    'moniter.source.search'     => 'Search engines',
+    'moniter.source.social'     => 'Social networks',
+    'moniter.source.ai'         => 'AI assistants',
+    'moniter.source.mail'       => 'E-mails',
+    'moniter.source.other'      => 'Other sites',
+
+    'moniter.device.mobile'     => 'Mobile',
+    'moniter.device.tablet'     => 'Tablet',
+    'moniter.device.desktop'    => 'Desktop',
+
+    'moniter.action.tel'        => 'Call',
+    'moniter.action.mail'       => 'E-mail',
+    'moniter.action.out'        => 'Link to',
+    'moniter.action.file'       => 'File',
+
+    'moniter.empty'             => 'No visits recorded yet. Page views will show up here after the first visits.',
+    'moniter.error.disabled'    => 'Audience measurement is turned off on this site.',
+    'moniter.error.sqlite'      => 'The PHP extension pdo_sqlite is missing on the server: nothing is counted.',
+    'moniter.privacy'           => 'Measured without cookies or identifiers: these are page views, not unique visitors. People logged in to the Panel are not counted.',
+];

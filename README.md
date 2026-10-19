@@ -1,6 +1,18 @@
 # kirby-moniter
 
-A lightweight Kirby CMS plugin that exposes a secured status endpoint for the Moniter dashboard — tracks version and uptime of client websites.
+A lightweight Kirby CMS plugin that connects client websites to [Moniter](https://moniter.rollinger.design), a personal dashboard to look after client sites: uptime, Kirby / plugin versions, content activity, cookieless audience and monthly reports.
+
+The plugin exposes two secured endpoints (`/moniter/status`, `/moniter/stats`), counts page views without cookies, and adds an **Audience** view to the Panel that works on its own, without Moniter.
+
+## What Moniter does with it
+
+- **Uptime & response time** — periodic HTTP checks (15 min → 12 h), push + email alert on offline / online transitions, and a *slow response* alert when the last 3 checks are above 3× the weekly median (and at least 1.5 s).
+- **Versions** — Kirby, PHP and every installed plugin, compared to the latest stable releases on Packagist. Updates made outside Moniter (GitHub Action, FTP) are picked up from version bumps between checks.
+- **Remote updates** — over SSH: backup of `composer.*`, `vendor/`, `kirby/`, `site/plugins/`, `composer update` of the outdated packages, then a check of the site and of `/moniter/status`, with **automatic rollback** if the site stops answering.
+- **Content activity** — last modified pages and page count, used to spot clients who publish and sites untouched for 90 days.
+- **Audience** — the counters from `/moniter/stats`, synced every hour: key figures compared to the previous period, entry pages, sources, country map, devices, languages, clicks, campaigns.
+- **Activity feed** — *what's moving* across all clients over 7 or 30 days: audience peaks and trends, content, health, things to handle (updates, contracts, backups, draft reports).
+- **Monthly reports** — sent by email to the client, built from the same figures.
 
 ## Installation
 
@@ -43,8 +55,25 @@ Header: X-Moniter-Key: <key>
   "stats": true,
   "plugins": {
     "author/plugin": "1.2.0"
+  },
+  "content": {
+    "last_modified": "2026-10-15T10:30:00",
+    "pages_count": 42,
+    "latest": [
+      { "title": "Projets", "uri": "projets", "url": "https://www.example.com/projets",
+        "modified": "2026-10-15T10:30:00", "template": "projects" }
+    ]
   }
 }
+```
+
+`stats` tells Moniter whether page views are counted (option on and `pdo_sqlite` available). `content` lists the published pages (drafts excluded), most recently modified first:
+
+```php
+return [
+    'moniter.limit'       => 10,                    // number of pages in `latest`
+    'moniter.collections' => ['projets', 'blog'],   // only count pages under these top-level sections
+];
 ```
 
 ### Error (invalid key)

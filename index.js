@@ -1,3 +1,4 @@
+// GÉNÉRÉ par scripts/build-panel.mjs depuis src/panel.js — ne pas modifier ici, puis : npm run build
 // Vue Audience du Panel — données calculées en PHP (src/Summary.php), passées en props par la zone `moniter`.
 // Habillage de Moniter (et du rapport mensuel) : crème, barres d'encre en minuscules, blocs blancs, pastilles.
 // Pas d'étape de build : le Panel embarque le compilateur de templates de Vue.
@@ -34,17 +35,12 @@ const MoniterList = {
       return (n >= 10 ? Math.round(n) : n.toLocaleString(locale(), { maximumFractionDigits: 1 })) + ' %'
     },
   },
-  template: `
-    <ol class="k-moniter-list">
-      <li v-for="row in rows" :key="row.key">
-        <span class="k-moniter-list-bar" :style="{ width: row.bar * 100 + '%' }"></span>
-        <span class="k-moniter-list-name" :title="row.hint || row.name">{{ row.name }}</span>
-        <span v-if="row.note" class="k-moniter-list-note">{{ row.note }}</span>
-        <span class="k-moniter-list-value">{{ num(row.value) }}</span>
-        <span v-if="shares" class="k-moniter-list-share">{{ pct(row.share) }}</span>
-      </li>
-    </ol>
-  `,
+  ...(() => {
+var render = function render(){var _vm=this,_c=_vm._self._c;return _c('ol',{staticClass:"k-moniter-list"},_vm._l((_vm.rows),function(row){return _c('li',{key:row.key},[_c('span',{staticClass:"k-moniter-list-bar",style:({ width: row.bar * 100 + '%' })}),_c('span',{staticClass:"k-moniter-list-name",attrs:{"title":row.hint || row.name}},[_vm._v(_vm._s(row.name))]),(row.note)?_c('span',{staticClass:"k-moniter-list-note"},[_vm._v(_vm._s(row.note))]):_vm._e(),_c('span',{staticClass:"k-moniter-list-value"},[_vm._v(_vm._s(_vm.num(row.value)))]),(_vm.shares)?_c('span',{staticClass:"k-moniter-list-share"},[_vm._v(_vm._s(_vm.pct(row.share)))]):_vm._e()])}),0)
+}
+var staticRenderFns = []
+return { render, staticRenderFns }
+})(),
 }
 
 // Carte des pays, teinte selon le nombre de pages vues (même rendu que WorldMap.vue dans Moniter)
@@ -82,31 +78,12 @@ const MoniterMap = {
       this.hover = c ? { c, x: e.clientX, y: e.clientY } : null
     },
   },
-  template: `
-    <div class="k-moniter-map">
-      <svg
-        v-if="map"
-        :viewBox="'0 0 ' + map.w + ' ' + map.h"
-        role="img"
-        :aria-label="$t('moniter.countries.count', { count: byCode.size })"
-        @pointermove="onMove"
-        @pointerleave="hover = null"
-      >
-        <path
-          v-for="(d, code) in map.paths"
-          :key="code"
-          :d="d"
-          :data-code="code"
-          :class="{ on: byCode.has(code), active: hover && hover.c.code === code }"
-          :style="shade(code)"
-        />
-      </svg>
-      <div v-else-if="map === null" class="k-moniter-map-placeholder" />
-      <div v-if="hover" class="k-moniter-tip" :style="{ left: hover.x + 'px', top: hover.y + 'px' }">
-        {{ hover.c.name }} · {{ hover.c.views.toLocaleString() }}
-      </div>
-    </div>
-  `,
+  ...(() => {
+var render = function render(){var _vm=this,_c=_vm._self._c;return _c('div',{staticClass:"k-moniter-map"},[(_vm.map)?_c('svg',{attrs:{"viewBox":'0 0 ' + _vm.map.w + ' ' + _vm.map.h,"role":"img","aria-label":_vm.$t('moniter.countries.count', { count: _vm.byCode.size })},on:{"pointermove":_vm.onMove,"pointerleave":function($event){_vm.hover = null}}},_vm._l((_vm.map.paths),function(d,code){return _c('path',{key:code,class:{ on: _vm.byCode.has(code), active: _vm.hover && _vm.hover.c.code === code },style:(_vm.shade(code)),attrs:{"d":d,"data-code":code}})}),0):(_vm.map === null)?_c('div',{staticClass:"k-moniter-map-placeholder"}):_vm._e(),(_vm.hover)?_c('div',{staticClass:"k-moniter-tip",style:({ left: _vm.hover.x + 'px', top: _vm.hover.y + 'px' })},[_vm._v(" "+_vm._s(_vm.hover.c.name)+" · "+_vm._s(_vm.hover.c.views.toLocaleString())+" ")]):_vm._e()])
+}
+var staticRenderFns = []
+return { render, staticRenderFns }
+})(),
 }
 
 panel.plugin('rllngr/kirby-moniter', {
@@ -258,90 +235,12 @@ panel.plugin('rllngr/kirby-moniter', {
           this.hover = { b, x: r.left + r.width / 2, y: r.top + r.height * (1 - b.views / this.max) }
         },
       },
-      template: `
-        <k-panel-inside class="k-moniter-view">
-          <div class="k-moniter">
-            <header class="k-moniter-ink k-moniter-header">
-              <h1>{{ $t('moniter.audience') }}</h1>
-              <nav class="k-moniter-periods">
-                <button
-                  v-for="p in PERIODS"
-                  :key="p"
-                  type="button"
-                  :aria-current="p === period ? 'true' : null"
-                  @click="go(p)"
-                >{{ $t('moniter.period.' + p) }}</button>
-              </nav>
-            </header>
-
-            <p v-if="error" class="k-moniter-block k-moniter-message">{{ $t('moniter.error.' + error) }}</p>
-            <p v-else-if="!hasData" class="k-moniter-block k-moniter-message">{{ $t('moniter.empty') }}</p>
-
-            <template v-else>
-              <div class="k-moniter-kpis">
-                <div v-for="k in kpis" :key="k.key" class="k-moniter-kpi" :data-color="k.color">
-                  <div class="k-moniter-kpi-dot" :data-size="k.size">
-                    <span class="k-moniter-kpi-value">{{ k.text }}</span>
-                    <span class="k-moniter-kpi-unit">{{ k.unit }}</span>
-                  </div>
-                  <p class="k-moniter-kpi-label">
-                    {{ k.label }}
-                    <span v-if="k.delta" class="k-moniter-kpi-delta">{{ k.delta }}</span>
-                  </p>
-                </div>
-              </div>
-              <p class="k-moniter-compared">{{ compared }}</p>
-
-              <section class="k-moniter-block">
-                <h2 class="k-moniter-caption">{{ $t(monthly ? 'moniter.chart.month' : 'moniter.chart.day') }}</h2>
-                <div class="k-moniter-chart" role="img" :aria-label="$t('moniter.chart')">
-                  <span class="k-moniter-chart-max">{{ num(max) }}</span>
-                  <div class="k-moniter-chart-bars" @pointermove="onMove" @pointerdown="onMove" @pointerleave="hover = null">
-                    <div v-for="(b, i) in buckets" :key="b.key" class="k-moniter-chart-col" :data-i="i">
-                      <div
-                        class="k-moniter-chart-bar"
-                        :class="{ zero: !b.views, active: hover && hover.b === b }"
-                        :style="{ height: (b.views / max) * 100 + '%' }"
-                      />
-                    </div>
-                  </div>
-                  <div class="k-moniter-chart-axis">
-                    <span>{{ buckets[0].label }}</span>
-                    <span>{{ buckets[buckets.length - 1].label }}</span>
-                  </div>
-                </div>
-                <div v-if="hover" class="k-moniter-tip" :style="{ left: hover.x + 'px', top: hover.y + 'px' }">
-                  {{ num(hover.b.views) }} {{ $t(hover.b.views > 1 ? 'moniter.views' : 'moniter.view') }}
-                  <span class="k-moniter-muted">· {{ hover.b.label }}</span>
-                </div>
-              </section>
-
-              <div class="k-moniter-grid">
-                <section
-                  v-for="box in boxes"
-                  :key="box.key"
-                  class="k-moniter-block"
-                  :class="{ 'k-moniter-wide': box.wide, 'k-moniter-full': box.map && map }"
-                >
-                  <h2 class="k-moniter-caption">{{ $t('moniter.' + box.key) }}</h2>
-                  <div v-if="box.map && map" class="k-moniter-map-layout">
-                    <k-moniter-map :src="map" :countries="stats.countries" />
-                    <k-moniter-list :items="box.items" :limit="box.limit" />
-                  </div>
-                  <k-moniter-list v-else :items="box.items" :shares="box.shares !== false" :limit="box.limit || 10" />
-                </section>
-              </div>
-
-              <p class="k-moniter-privacy">{{ $t('moniter.privacy') }}</p>
-            </template>
-
-            <footer class="k-moniter-ink k-moniter-footer">
-              <span>moniter</span>
-              <a href="https://rollinger.design" target="_blank" rel="noopener">rollinger.design</a>
-            </footer>
-          </div>
-        </k-panel-inside>
-      `,
+      ...(() => {
+var render = function render(){var _vm=this,_c=_vm._self._c;return _c('k-panel-inside',{staticClass:"k-moniter-view"},[_c('div',{staticClass:"k-moniter"},[_c('header',{staticClass:"k-moniter-ink k-moniter-header"},[_c('h1',[_vm._v(_vm._s(_vm.$t('moniter.audience')))]),_c('nav',{staticClass:"k-moniter-periods"},_vm._l((_vm.PERIODS),function(p){return _c('button',{key:p,attrs:{"type":"button","aria-current":p === _vm.period ? 'true' : null},on:{"click":function($event){return _vm.go(p)}}},[_vm._v(_vm._s(_vm.$t('moniter.period.' + p)))])}),0)]),(_vm.error)?_c('p',{staticClass:"k-moniter-block k-moniter-message"},[_vm._v(_vm._s(_vm.$t('moniter.error.' + _vm.error)))]):(!_vm.hasData)?_c('p',{staticClass:"k-moniter-block k-moniter-message"},[_vm._v(_vm._s(_vm.$t('moniter.empty')))]):[_c('div',{staticClass:"k-moniter-kpis"},_vm._l((_vm.kpis),function(k){return _c('div',{key:k.key,staticClass:"k-moniter-kpi",attrs:{"data-color":k.color}},[_c('div',{staticClass:"k-moniter-kpi-dot",attrs:{"data-size":k.size}},[_c('span',{staticClass:"k-moniter-kpi-value"},[_vm._v(_vm._s(k.text))]),_c('span',{staticClass:"k-moniter-kpi-unit"},[_vm._v(_vm._s(k.unit))])]),_c('p',{staticClass:"k-moniter-kpi-label"},[_vm._v(" "+_vm._s(k.label)+" "),(k.delta)?_c('span',{staticClass:"k-moniter-kpi-delta"},[_vm._v(_vm._s(k.delta))]):_vm._e()])])}),0),_c('p',{staticClass:"k-moniter-compared"},[_vm._v(_vm._s(_vm.compared))]),_c('section',{staticClass:"k-moniter-block"},[_c('h2',{staticClass:"k-moniter-caption"},[_vm._v(_vm._s(_vm.$t(_vm.monthly ? 'moniter.chart.month' : 'moniter.chart.day')))]),_c('div',{staticClass:"k-moniter-chart",attrs:{"role":"img","aria-label":_vm.$t('moniter.chart')}},[_c('span',{staticClass:"k-moniter-chart-max"},[_vm._v(_vm._s(_vm.num(_vm.max)))]),_c('div',{staticClass:"k-moniter-chart-bars",on:{"pointermove":_vm.onMove,"pointerdown":_vm.onMove,"pointerleave":function($event){_vm.hover = null}}},_vm._l((_vm.buckets),function(b,i){return _c('div',{key:b.key,staticClass:"k-moniter-chart-col",attrs:{"data-i":i}},[_c('div',{staticClass:"k-moniter-chart-bar",class:{ zero: !b.views, active: _vm.hover && _vm.hover.b === b },style:({ height: (b.views / _vm.max) * 100 + '%' })})])}),0),_c('div',{staticClass:"k-moniter-chart-axis"},[_c('span',[_vm._v(_vm._s(_vm.buckets[0].label))]),_c('span',[_vm._v(_vm._s(_vm.buckets[_vm.buckets.length - 1].label))])])]),(_vm.hover)?_c('div',{staticClass:"k-moniter-tip",style:({ left: _vm.hover.x + 'px', top: _vm.hover.y + 'px' })},[_vm._v(" "+_vm._s(_vm.num(_vm.hover.b.views))+" "+_vm._s(_vm.$t(_vm.hover.b.views > 1 ? 'moniter.views' : 'moniter.view'))+" "),_c('span',{staticClass:"k-moniter-muted"},[_vm._v("· "+_vm._s(_vm.hover.b.label))])]):_vm._e()]),_c('div',{staticClass:"k-moniter-grid"},_vm._l((_vm.boxes),function(box){return _c('section',{key:box.key,staticClass:"k-moniter-block",class:{ 'k-moniter-wide': box.wide, 'k-moniter-full': box.map && _vm.map }},[_c('h2',{staticClass:"k-moniter-caption"},[_vm._v(_vm._s(_vm.$t('moniter.' + box.key)))]),(box.map && _vm.map)?_c('div',{staticClass:"k-moniter-map-layout"},[_c('k-moniter-map',{attrs:{"src":_vm.map,"countries":_vm.stats.countries}}),_c('k-moniter-list',{attrs:{"items":box.items,"limit":box.limit}})],1):_c('k-moniter-list',{attrs:{"items":box.items,"shares":box.shares !== false,"limit":box.limit || 10}})],1)}),0),_c('p',{staticClass:"k-moniter-privacy"},[_vm._v(_vm._s(_vm.$t('moniter.privacy')))])],_c('footer',{staticClass:"k-moniter-ink k-moniter-footer"},[_c('span',[_vm._v("moniter")]),_c('a',{attrs:{"href":"https://rollinger.design","target":"_blank","rel":"noopener"}},[_vm._v("rollinger.design")])])],2)])
+}
+var staticRenderFns = []
+return { render, staticRenderFns }
+})(),
     },
   },
 })

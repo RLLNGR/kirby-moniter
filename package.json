@@ -1,0 +1,11 @@
+{
+  "name": "kirby-moniter-panel",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-panel.mjs"
+  },
+  "devDependencies": {
+    "vue": "2.7.16"
+  }
+}

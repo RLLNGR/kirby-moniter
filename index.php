@@ -26,7 +26,7 @@ function moniterPanelAccess(): bool
 
 Kirby::plugin('rllngr/kirby-moniter', [
     'info' => [
-        'version' => '1.5.0',
+        'version' => '1.5.1',
     ],
     // Vue Audience dans le Panel (Kirby ≥ 4 : k-panel-inside n'existe pas en 3)
     'areas' => version_compare(Kirby::version(), '4.0.0', '>=') ? [

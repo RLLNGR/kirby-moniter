@@ -203,6 +203,12 @@ class Summary
             $byCountry[$code] = ($byCountry[$code] ?? 0) + $l['views'];
         }
         arsort($byCountry);
+        // Les visites sans pays (« Inconnu ») toujours en dernier : ce n'est pas un pays parmi les autres
+        if (isset($byCountry[''])) {
+            $unknown = $byCountry[''];
+            unset($byCountry['']);
+            $byCountry[''] = $unknown;
+        }
         $countries = array_map(fn ($code, $views) => [
             'code' => $code, 'views' => (int) $views,
             'name' => $code === '' ? null : static::displayName('region', (string) $code, $locale),

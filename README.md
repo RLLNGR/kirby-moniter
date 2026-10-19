@@ -167,6 +167,17 @@ return [
 
 Kirby 3 sites keep working, without the Panel view.
 
+Works with `'panel' => ['vue' => ['compiler' => false]]` (a CSP without `'unsafe-eval'`) since v1.5.1: the view ships precompiled render functions. Before that it rendered a blank page there, with no error.
+
+#### Changing the view
+
+The Panel code lives in `src/panel.js`, written with ordinary `template` strings. `index.js` is generated from it - edit the source, then:
+
+```bash
+npm install
+npm run build   # scripts/build-panel.mjs → index.js, commit both
+```
+
 ## Security
 
 - Key comparison uses `hash_equals()` (timing attack protection)

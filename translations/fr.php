@@ -37,7 +37,7 @@ return [
     'moniter.actions'           => 'Clics',
     'moniter.campaigns'         => 'Campagnes',
     'moniter.home'              => 'Accueil',
-    'moniter.other'             => 'Autre',
+    'moniter.other'             => 'Inconnu',
 
     'moniter.source.direct'     => 'Accès direct',
     'moniter.source.search'     => 'Moteurs de recherche',

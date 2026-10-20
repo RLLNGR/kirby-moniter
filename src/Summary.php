@@ -234,6 +234,8 @@ class Summary
             'countries'   => $countries,
             'languages'   => $languages,
             'devices'     => $int(static::all('SELECT type, SUM(n) AS views FROM devices WHERE day >= ? AND day < ? GROUP BY type ORDER BY views DESC', $span), ['views']),
+            'browsers'    => $int(static::all('SELECT name, SUM(n) AS views FROM browsers WHERE day >= ? AND day < ? GROUP BY name ORDER BY views DESC', $span), ['views']),
+            'systems'     => $int(static::all('SELECT name, SUM(n) AS views FROM systems WHERE day >= ? AND day < ? GROUP BY name ORDER BY views DESC', $span), ['views']),
             'actions'     => $int(static::all('SELECT type, target, SUM(n) AS clicks FROM actions WHERE day >= ? AND day < ?
                                                GROUP BY type, target ORDER BY clicks DESC LIMIT 12', $span), ['clicks']),
             'campaigns'   => $int(static::all('SELECT name, SUM(n) AS views FROM campaigns WHERE day >= ? AND day < ?

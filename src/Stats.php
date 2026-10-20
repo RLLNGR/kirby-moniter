@@ -103,6 +103,19 @@ class Stats
             n    INTEGER NOT NULL DEFAULT 0,
             PRIMARY KEY (day, name)
         ) WITHOUT ROWID');
+        // 1.6 : famille de navigateur et de système, tirées du User-Agent au comptage (le User-Agent n'est pas gardé)
+        $db->exec('CREATE TABLE IF NOT EXISTS browsers (
+            day  TEXT NOT NULL,
+            name TEXT NOT NULL,
+            n    INTEGER NOT NULL DEFAULT 0,
+            PRIMARY KEY (day, name)
+        ) WITHOUT ROWID');
+        $db->exec('CREATE TABLE IF NOT EXISTS systems (
+            day  TEXT NOT NULL,
+            name TEXT NOT NULL,
+            n    INTEGER NOT NULL DEFAULT 0,
+            PRIMARY KEY (day, name)
+        ) WITHOUT ROWID');
         $db->exec('CREATE TABLE IF NOT EXISTS referrers (
             day  TEXT NOT NULL,
             host TEXT NOT NULL,
@@ -146,7 +159,22 @@ class Stats
         return $path;
     }
 
-    const TABLES = ['views', 'referrers', 'zones', 'locales', 'langs', 'devices', 'entries', 'actions', 'campaigns'];
+    const TABLES = ['views', 'referrers', 'zones', 'locales', 'langs', 'devices', 'browsers', 'systems', 'entries', 'actions', 'campaigns'];
+
+    // Navigateurs intégrés aux applis : ils n'envoient souvent pas de référent, leur visite passerait pour « directe ».
+    // Le domaine sert de provenance, pour être classé comme les autres réseaux sociaux. L'ordre compte (Messenger avant Facebook).
+    const IN_APP = [
+        'Instagram' => ['/\bInstagram\b/i', 'instagram.com'],
+        'Messenger' => ['/\bMessenger(ForiOS|LiteForiOS)?\b|FB_IAB\/MESSENGER|FBAN\/Messenger/i', 'messenger.com'],
+        'Facebook'  => ['/\bFBAN\/|\bFBAV\/|\bFB_IAB\b|\bFBIOS\b/', 'facebook.com'],
+        'LinkedIn'  => ['/\bLinkedInApp\b/i', 'linkedin.com'],
+        'TikTok'    => ['/\b(TikTok|musical_ly|BytedanceWebview)\b/i', 'tiktok.com'],
+        'Pinterest' => ['/\bPinterest\b/i', 'pinterest.com'],
+        'Snapchat'  => ['/\bSnapchat\b/i', 'snapchat.com'],
+        'X'         => ['/\bTwitter(Android|iPhone)?\b/i', 'x.com'],
+        'Threads'   => ['/\bBarcelona\b/', 'threads.net'],
+        'WhatsApp'  => ['/\bWhatsApp\b/i', 'whatsapp.com'],
+    ];
     const DEVICES = ['mobile', 'tablet', 'desktop'];
     const ACTIONS = ['tel', 'mail', 'out', 'file'];
 
@@ -173,6 +201,47 @@ class Stats
         }
     }
 
+    /** Appli dont le navigateur intégré a ouvert la page : [nom, domaine], ou null */
+    public static function inApp(string $ua): ?array
+    {
+        foreach (static::IN_APP as $name => [$re, $host]) {
+            if (preg_match($re, $ua)) return [$name, $host];
+        }
+        return null;
+    }
+
+    /** Famille de navigateur, sans version : les versions du User-Agent sont figées par les navigateurs eux-mêmes */
+    public static function browserOf(string $ua): string
+    {
+        if ($app = static::inApp($ua)) return $app[0];
+        return match (true) {
+            (bool) preg_match('/\bEdg(e|A|iOS)?\//', $ua)          => 'Edge',
+            (bool) preg_match('/\b(OPR|Opera|OPiOS)\//', $ua)       => 'Opera',
+            (bool) preg_match('/\bSamsungBrowser\//', $ua)          => 'Samsung Internet',
+            (bool) preg_match('/\b(Firefox|FxiOS)\//', $ua)         => 'Firefox',
+            (bool) preg_match('/\bDuckDuckGo\//', $ua)              => 'DuckDuckGo',
+            (bool) preg_match('/\b(Chrome|CriOS|Chromium)\//', $ua) => 'Chrome',
+            (bool) preg_match('/\bVersion\/[\d.]+.*Safari\//', $ua) => 'Safari',
+            default                                                   => 'Autre',
+        };
+    }
+
+    /** Système, sans version. Un iPad se présente comme un Mac : le type d'appareil (écran tactile) le trahit. */
+    public static function systemOf(string $ua, string $device = ''): string
+    {
+        $os = match (true) {
+            (bool) preg_match('/\b(iPhone|iPod)\b/', $ua) => 'iOS',
+            (bool) preg_match('/\biPad\b/', $ua)          => 'iPadOS',
+            (bool) preg_match('/\bAndroid\b/', $ua)       => 'Android',
+            (bool) preg_match('/\bWindows\b/', $ua)       => 'Windows',
+            (bool) preg_match('/\bCrOS\b/', $ua)          => 'ChromeOS',
+            (bool) preg_match('/\bMac OS X\b|\bMacintosh\b/', $ua) => 'macOS',
+            (bool) preg_match('/\bLinux\b/', $ua)         => 'Linux',
+            default                                         => 'Autre',
+        };
+        return $os === 'macOS' && $device === 'tablet' ? 'iPadOS' : $os;
+    }
+
     private static function recordRows(array $hit, string $siteHost): void
     {
         $day  = date('Y-m-d');
@@ -186,6 +255,10 @@ class Stats
         $refHost = $str('r') ? strtolower((string) parse_url($str('r'), PHP_URL_HOST)) : '';
         $refHost = preg_replace('/^www\./', '', $refHost);
         $own     = preg_replace('/^www\./', '', strtolower($siteHost));
+        $ua      = (string) ($_SERVER['HTTP_USER_AGENT'] ?? '');
+        // Arrivée « directe » depuis le navigateur d'une appli : la provenance, c'est l'appli
+        $app = ($hit['e'] ?? 0) === 1 && $str('r') === '' ? static::inApp($ua) : null;
+        if ($app) $refHost = $app[1];
         $external = $refHost && $refHost !== $own;
         if ($external && mb_strlen($refHost) <= 100) {
             static::bump('INSERT INTO referrers (day, host, n) VALUES (?, ?, 1)
@@ -214,9 +287,16 @@ class Stats
                           ON CONFLICT(day, type) DO UPDATE SET n = n + 1', [$day, $str('d')]);
         }
 
+        if ($ua !== '') {
+            static::bump('INSERT INTO browsers (day, name, n) VALUES (?, ?, 1)
+                          ON CONFLICT(day, name) DO UPDATE SET n = n + 1', [$day, static::browserOf($ua)]);
+            static::bump('INSERT INTO systems (day, name, n) VALUES (?, ?, 1)
+                          ON CONFLICT(day, name) DO UPDATE SET n = n + 1', [$day, static::systemOf($ua, $str('d'))]);
+        }
+
         // Arrivée sur le site : seulement si le beacon le dit (les anciens snippets Nuxt n'envoient pas `e`)
         if (($hit['e'] ?? 0) === 1) {
-            $direct = $str('r') === '' ? 1 : 0;
+            $direct = $str('r') === '' && !$app ? 1 : 0;
             static::bump('INSERT INTO entries (day, path, n, direct) VALUES (?, ?, 1, ?)
                           ON CONFLICT(day, path) DO UPDATE SET n = n + 1, direct = direct + excluded.direct', [$day, $path, $direct]);
             $campaign = mb_strtolower(trim($str('c')));
@@ -276,6 +356,8 @@ class Stats
             ),
             'langs'     => $all('SELECT day AS d, lang AS l, n AS v FROM langs WHERE day >= ? ORDER BY day'),
             'devices'   => $all('SELECT day AS d, type AS t, n AS v FROM devices WHERE day >= ? ORDER BY day'),
+            'browsers'  => $all('SELECT day AS d, name AS b, n AS v FROM browsers WHERE day >= ? ORDER BY day'),
+            'systems'   => $all('SELECT day AS d, name AS o, n AS v FROM systems WHERE day >= ? ORDER BY day'),
             'entries'   => $all('SELECT day AS d, path AS p, n AS v, cont AS c, direct AS x FROM entries WHERE day >= ? ORDER BY day'),
             'actions'   => $all('SELECT day AS d, type AS t, target AS g, n AS v FROM actions WHERE day >= ? ORDER BY day'),
             'campaigns' => $all('SELECT day AS d, name AS c, n AS v FROM campaigns WHERE day >= ? ORDER BY day'),

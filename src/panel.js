@@ -75,7 +75,7 @@ const MoniterMap = {
       const c = this.byCode.get(code)
       if (!c) return null
       const t = Math.log1p(c.views) / Math.log1p(this.max)
-      return { fill: `color-mix(in srgb, var(--m-accent) ${Math.round(18 + t * 82)}%, var(--m-surface))` }
+      return { fill: `color-mix(in srgb, var(--tone, var(--m-accent)) ${Math.round(18 + t * 82)}%, var(--m-surface))` }
     },
     onMove(e) {
       const c = this.byCode.get(e.target.dataset && e.target.dataset.code)
@@ -200,6 +200,13 @@ panel.plugin('rllngr/kirby-moniter', {
         devices() {
           return this.stats.devices.map(d => ({ key: d.type, name: this.$t('moniter.device.' + d.type), value: d.views }))
         },
+        // « Autre » est enregistré tel quel par le plugin : un navigateur ou un système hors de la liste connue
+        browsers() {
+          return this.stats.browsers.map(b => ({ key: b.name, name: b.name === 'Autre' ? this.$t('moniter.others') : b.name, value: b.views }))
+        },
+        systems() {
+          return this.stats.systems.map(o => ({ key: o.name, name: o.name === 'Autre' ? this.$t('moniter.others') : o.name, value: o.views }))
+        },
         languages() {
           return this.stats.languages.map(l => ({ key: l.code, name: l.name, value: l.views }))
         },
@@ -213,16 +220,20 @@ panel.plugin('rllngr/kirby-moniter', {
         },
         // Blocs de listes, dans l'ordre de Moniter ; un bloc vide n'est pas affiché
         boxes() {
+          // Une couleur par question, la même dans Moniter : bleu = ce qui est lu, magenta = d'où l'on vient,
+          // vert = où sont les gens, orange = avec quoi, jaune = ce qui rapporte (clics)
           return [
-            { key: 'top_pages', items: this.topPages, shares: false, wide: true },
-            { key: 'sources', items: this.sources },
-            { key: 'entry_pages', items: this.entryPages, shares: false, wide: true },
-            { key: 'referrers', items: this.referrers, shares: false },
-            { key: 'countries', items: this.countries, limit: 8, map: true },
-            { key: 'devices', items: this.devices },
-            { key: 'languages', items: this.languages, limit: 6 },
-            { key: 'actions', items: this.actions, shares: false, limit: 12 },
-            { key: 'campaigns', items: this.campaigns, shares: false },
+            { key: 'top_pages', items: this.topPages, shares: false, wide: true, tone: 'blue' },
+            { key: 'sources', items: this.sources, tone: 'magenta' },
+            { key: 'entry_pages', items: this.entryPages, shares: false, wide: true, tone: 'blue' },
+            { key: 'referrers', items: this.referrers, shares: false, tone: 'magenta' },
+            { key: 'countries', items: this.countries, limit: 8, map: true, tone: 'green' },
+            { key: 'devices', items: this.devices, tone: 'orange' },
+            { key: 'browsers', items: this.browsers, limit: 6, tone: 'orange' },
+            { key: 'systems', items: this.systems, limit: 6, tone: 'orange' },
+            { key: 'languages', items: this.languages, limit: 6, tone: 'green' },
+            { key: 'actions', items: this.actions, shares: false, limit: 12, tone: 'yellow' },
+            { key: 'campaigns', items: this.campaigns, shares: false, tone: 'magenta' },
           ].filter(b => b.items.length)
         },
       },
@@ -321,6 +332,7 @@ panel.plugin('rllngr/kirby-moniter', {
                   v-for="box in boxes"
                   :key="box.key"
                   class="k-moniter-block"
+                  :data-tone="box.tone"
                   :class="{ 'k-moniter-wide': box.wide, 'k-moniter-full': box.map && map }"
                 >
                   <h2 class="k-moniter-caption">{{ $t('moniter.' + box.key) }}</h2>

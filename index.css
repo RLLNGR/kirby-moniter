@@ -11,6 +11,8 @@
   --m-green: #009c31;
   --m-magenta: #db00cf;
   --m-orange: #ea5d0e;
+  --m-yellow: #ffd600;
+  --m-red: #ff3a20;
 
   --m-bg: light-dark(var(--m-cream), var(--m-ink));
   --m-text: light-dark(var(--m-ink), var(--m-cream));
@@ -319,7 +321,25 @@
 .k-moniter-list-bar {
   position: absolute;
   inset: 0 auto 0 0;
-  background: var(--m-hover);
+  /* Teinte du bloc, assez claire pour que le texte reste à l'encre */
+  background: color-mix(in srgb, var(--tone, var(--m-text)) var(--tone-mix, 7%), var(--m-surface));
+}
+
+/* Une couleur par question (comme Moniter) : la pastille du titre, les barres, la carte */
+.k-moniter-block[data-tone] { --tone-mix: 18%; }
+.k-moniter-block[data-tone="blue"] { --tone: var(--m-blue); }
+.k-moniter-block[data-tone="magenta"] { --tone: var(--m-magenta); }
+.k-moniter-block[data-tone="green"] { --tone: var(--m-green); }
+.k-moniter-block[data-tone="orange"] { --tone: var(--m-orange); }
+.k-moniter-block[data-tone="yellow"] { --tone: var(--m-yellow); --tone-mix: 32%; }
+.k-moniter-block[data-tone] > .k-moniter-caption::before {
+  content: "";
+  display: inline-block;
+  width: 0.6em;
+  height: 0.6em;
+  margin-right: 0.45em;
+  border-radius: 50%;
+  background: var(--tone);
 }
 .k-moniter-list-name {
   position: relative;

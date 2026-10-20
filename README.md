@@ -96,6 +96,11 @@ Since v1.3.0 it also stores the **reading time** per page, the browser's **time 
 - **Entries & bounce**: a view is an *entry* when it is the first load of the tab and comes from another site or from nowhere (reloads excluded). The entry path is kept in `sessionStorage` for the life of the tab; if a second page is viewed, the entry is marked as *continued*. Bounce = entries not continued. Entries without referrer = **direct**. `utm_campaign` (or `utm_source`) of entries = **campaigns**.
 - **Actions**: clicks on `tel:` (number), `mailto:` (address), links to another site (domain only) and files (`.pdf`, `.docx`, `.zip`… file name only).
 
+Since v1.6.0:
+
+- **Browser and system**, as families without version (Chrome, Safari, Firefox, Edge, Samsung Internet… / iOS, iPadOS, Android, macOS, Windows, Linux, ChromeOS), read from the User-Agent when the hit is counted - the User-Agent itself is still not stored. Versions are left out on purpose: browsers freeze them (macOS stays « 10.15.7 »). An iPad presents itself as a Mac; the device type (touch screen) gives it away.
+- **In-app browsers**: a page opened from Instagram, Facebook, Messenger, LinkedIn, TikTok, Pinterest, Snapchat, X, Threads or WhatsApp often sends no referrer, so the visit looked direct. The app's own User-Agent token now attributes such an entry to the app's domain (`instagram.com`…), and it is no longer counted as direct. Only on entries sent by the v1.4+ beacon (`e`); older snippets are left as they were.
+
 Each counter lives in its own table, per day: they are never combined into a per-visitor record. `sessionStorage` is the only browser storage, it holds no identifier and is wiped when the tab closes.
 
 These are **page views, not visitors**: without an identifier, unique visitors cannot be counted.
@@ -142,6 +147,8 @@ Header: X-Moniter-Key: <key>
   "zones": [{ "d": "2026-10-02", "z": "Europe/Paris", "r": "FR", "v": 11 }],
   "langs": [{ "d": "2026-10-02", "l": "fr", "v": 10 }],
   "devices": [{ "d": "2026-10-02", "t": "mobile", "v": 8 }],
+  "browsers": [{ "d": "2026-10-02", "b": "Safari", "v": 6 }],
+  "systems": [{ "d": "2026-10-02", "o": "iOS", "v": 5 }],
   "entries": [{ "d": "2026-10-02", "p": "/", "v": 6, "c": 2, "x": 3 }],
   "actions": [{ "d": "2026-10-02", "t": "tel", "g": "+33233000000", "v": 1 }],
   "campaigns": [{ "d": "2026-10-02", "c": "newsletter-octobre", "v": 2 }] }

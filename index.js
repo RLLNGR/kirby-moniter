@@ -71,7 +71,7 @@ const MoniterMap = {
       const c = this.byCode.get(code)
       if (!c) return null
       const t = Math.log1p(c.views) / Math.log1p(this.max)
-      return { fill: `color-mix(in srgb, var(--m-accent) ${Math.round(18 + t * 82)}%, var(--m-surface))` }
+      return { fill: `color-mix(in srgb, var(--tone, var(--m-accent)) ${Math.round(18 + t * 82)}%, var(--m-surface))` }
     },
     onMove(e) {
       const c = this.byCode.get(e.target.dataset && e.target.dataset.code)
@@ -177,6 +177,13 @@ panel.plugin('rllngr/kirby-moniter', {
         devices() {
           return this.stats.devices.map(d => ({ key: d.type, name: this.$t('moniter.device.' + d.type), value: d.views }))
         },
+        // « Autre » est enregistré tel quel par le plugin : un navigateur ou un système hors de la liste connue
+        browsers() {
+          return this.stats.browsers.map(b => ({ key: b.name, name: b.name === 'Autre' ? this.$t('moniter.others') : b.name, value: b.views }))
+        },
+        systems() {
+          return this.stats.systems.map(o => ({ key: o.name, name: o.name === 'Autre' ? this.$t('moniter.others') : o.name, value: o.views }))
+        },
         languages() {
           return this.stats.languages.map(l => ({ key: l.code, name: l.name, value: l.views }))
         },
@@ -190,16 +197,20 @@ panel.plugin('rllngr/kirby-moniter', {
         },
         // Blocs de listes, dans l'ordre de Moniter ; un bloc vide n'est pas affiché
         boxes() {
+          // Une couleur par question, la même dans Moniter : bleu = ce qui est lu, magenta = d'où l'on vient,
+          // vert = où sont les gens, orange = avec quoi, jaune = ce qui rapporte (clics)
           return [
-            { key: 'top_pages', items: this.topPages, shares: false, wide: true },
-            { key: 'sources', items: this.sources },
-            { key: 'entry_pages', items: this.entryPages, shares: false, wide: true },
-            { key: 'referrers', items: this.referrers, shares: false },
-            { key: 'countries', items: this.countries, limit: 8, map: true },
-            { key: 'devices', items: this.devices },
-            { key: 'languages', items: this.languages, limit: 6 },
-            { key: 'actions', items: this.actions, shares: false, limit: 12 },
-            { key: 'campaigns', items: this.campaigns, shares: false },
+            { key: 'top_pages', items: this.topPages, shares: false, wide: true, tone: 'blue' },
+            { key: 'sources', items: this.sources, tone: 'magenta' },
+            { key: 'entry_pages', items: this.entryPages, shares: false, wide: true, tone: 'blue' },
+            { key: 'referrers', items: this.referrers, shares: false, tone: 'magenta' },
+            { key: 'countries', items: this.countries, limit: 8, map: true, tone: 'green' },
+            { key: 'devices', items: this.devices, tone: 'orange' },
+            { key: 'browsers', items: this.browsers, limit: 6, tone: 'orange' },
+            { key: 'systems', items: this.systems, limit: 6, tone: 'orange' },
+            { key: 'languages', items: this.languages, limit: 6, tone: 'green' },
+            { key: 'actions', items: this.actions, shares: false, limit: 12, tone: 'yellow' },
+            { key: 'campaigns', items: this.campaigns, shares: false, tone: 'magenta' },
           ].filter(b => b.items.length)
         },
       },
@@ -236,7 +247,7 @@ panel.plugin('rllngr/kirby-moniter', {
         },
       },
       ...(() => {
-var render = function render(){var _vm=this,_c=_vm._self._c;return _c('k-panel-inside',{staticClass:"k-moniter-view"},[_c('div',{staticClass:"k-moniter"},[_c('header',{staticClass:"k-moniter-ink k-moniter-header"},[_c('h1',[_vm._v(_vm._s(_vm.$t('moniter.audience')))]),_c('nav',{staticClass:"k-moniter-periods"},_vm._l((_vm.PERIODS),function(p){return _c('button',{key:p,attrs:{"type":"button","aria-current":p === _vm.period ? 'true' : null},on:{"click":function($event){return _vm.go(p)}}},[_vm._v(_vm._s(_vm.$t('moniter.period.' + p)))])}),0)]),(_vm.error)?_c('p',{staticClass:"k-moniter-block k-moniter-message"},[_vm._v(_vm._s(_vm.$t('moniter.error.' + _vm.error)))]):(!_vm.hasData)?_c('p',{staticClass:"k-moniter-block k-moniter-message"},[_vm._v(_vm._s(_vm.$t('moniter.empty')))]):[_c('div',{staticClass:"k-moniter-kpis"},_vm._l((_vm.kpis),function(k){return _c('div',{key:k.key,staticClass:"k-moniter-kpi",attrs:{"data-color":k.color}},[_c('div',{staticClass:"k-moniter-kpi-dot",attrs:{"data-size":k.size}},[_c('span',{staticClass:"k-moniter-kpi-value"},[_vm._v(_vm._s(k.text))]),_c('span',{staticClass:"k-moniter-kpi-unit"},[_vm._v(_vm._s(k.unit))])]),_c('p',{staticClass:"k-moniter-kpi-label"},[_vm._v(" "+_vm._s(k.label)+" "),(k.delta)?_c('span',{staticClass:"k-moniter-kpi-delta"},[_vm._v(_vm._s(k.delta))]):_vm._e()])])}),0),_c('p',{staticClass:"k-moniter-compared"},[_vm._v(_vm._s(_vm.compared))]),_c('section',{staticClass:"k-moniter-block"},[_c('h2',{staticClass:"k-moniter-caption"},[_vm._v(_vm._s(_vm.$t(_vm.monthly ? 'moniter.chart.month' : 'moniter.chart.day')))]),_c('div',{staticClass:"k-moniter-chart",attrs:{"role":"img","aria-label":_vm.$t('moniter.chart')}},[_c('span',{staticClass:"k-moniter-chart-max"},[_vm._v(_vm._s(_vm.num(_vm.max)))]),_c('div',{staticClass:"k-moniter-chart-bars",on:{"pointermove":_vm.onMove,"pointerdown":_vm.onMove,"pointerleave":function($event){_vm.hover = null}}},_vm._l((_vm.buckets),function(b,i){return _c('div',{key:b.key,staticClass:"k-moniter-chart-col",attrs:{"data-i":i}},[_c('div',{staticClass:"k-moniter-chart-bar",class:{ zero: !b.views, active: _vm.hover && _vm.hover.b === b },style:({ height: (b.views / _vm.max) * 100 + '%' })})])}),0),_c('div',{staticClass:"k-moniter-chart-axis"},[_c('span',[_vm._v(_vm._s(_vm.buckets[0].label))]),_c('span',[_vm._v(_vm._s(_vm.buckets[_vm.buckets.length - 1].label))])])]),(_vm.hover)?_c('div',{staticClass:"k-moniter-tip",style:({ left: _vm.hover.x + 'px', top: _vm.hover.y + 'px' })},[_vm._v(" "+_vm._s(_vm.num(_vm.hover.b.views))+" "+_vm._s(_vm.$t(_vm.hover.b.views > 1 ? 'moniter.views' : 'moniter.view'))+" "),_c('span',{staticClass:"k-moniter-muted"},[_vm._v("· "+_vm._s(_vm.hover.b.label))])]):_vm._e()]),_c('div',{staticClass:"k-moniter-grid"},_vm._l((_vm.boxes),function(box){return _c('section',{key:box.key,staticClass:"k-moniter-block",class:{ 'k-moniter-wide': box.wide, 'k-moniter-full': box.map && _vm.map }},[_c('h2',{staticClass:"k-moniter-caption"},[_vm._v(_vm._s(_vm.$t('moniter.' + box.key)))]),(box.map && _vm.map)?_c('div',{staticClass:"k-moniter-map-layout"},[_c('k-moniter-map',{attrs:{"src":_vm.map,"countries":_vm.stats.countries}}),_c('k-moniter-list',{attrs:{"items":box.items,"limit":box.limit}})],1):_c('k-moniter-list',{attrs:{"items":box.items,"shares":box.shares !== false,"limit":box.limit || 10}})],1)}),0),_c('p',{staticClass:"k-moniter-privacy"},[_vm._v(_vm._s(_vm.$t('moniter.privacy')))])],_c('footer',{staticClass:"k-moniter-ink k-moniter-footer"},[_c('span',[_vm._v("moniter")]),_c('a',{attrs:{"href":"https://rollinger.design","target":"_blank","rel":"noopener"}},[_vm._v("rollinger.design")])])],2)])
+var render = function render(){var _vm=this,_c=_vm._self._c;return _c('k-panel-inside',{staticClass:"k-moniter-view"},[_c('div',{staticClass:"k-moniter"},[_c('header',{staticClass:"k-moniter-ink k-moniter-header"},[_c('h1',[_vm._v(_vm._s(_vm.$t('moniter.audience')))]),_c('nav',{staticClass:"k-moniter-periods"},_vm._l((_vm.PERIODS),function(p){return _c('button',{key:p,attrs:{"type":"button","aria-current":p === _vm.period ? 'true' : null},on:{"click":function($event){return _vm.go(p)}}},[_vm._v(_vm._s(_vm.$t('moniter.period.' + p)))])}),0)]),(_vm.error)?_c('p',{staticClass:"k-moniter-block k-moniter-message"},[_vm._v(_vm._s(_vm.$t('moniter.error.' + _vm.error)))]):(!_vm.hasData)?_c('p',{staticClass:"k-moniter-block k-moniter-message"},[_vm._v(_vm._s(_vm.$t('moniter.empty')))]):[_c('div',{staticClass:"k-moniter-kpis"},_vm._l((_vm.kpis),function(k){return _c('div',{key:k.key,staticClass:"k-moniter-kpi",attrs:{"data-color":k.color}},[_c('div',{staticClass:"k-moniter-kpi-dot",attrs:{"data-size":k.size}},[_c('span',{staticClass:"k-moniter-kpi-value"},[_vm._v(_vm._s(k.text))]),_c('span',{staticClass:"k-moniter-kpi-unit"},[_vm._v(_vm._s(k.unit))])]),_c('p',{staticClass:"k-moniter-kpi-label"},[_vm._v(" "+_vm._s(k.label)+" "),(k.delta)?_c('span',{staticClass:"k-moniter-kpi-delta"},[_vm._v(_vm._s(k.delta))]):_vm._e()])])}),0),_c('p',{staticClass:"k-moniter-compared"},[_vm._v(_vm._s(_vm.compared))]),_c('section',{staticClass:"k-moniter-block"},[_c('h2',{staticClass:"k-moniter-caption"},[_vm._v(_vm._s(_vm.$t(_vm.monthly ? 'moniter.chart.month' : 'moniter.chart.day')))]),_c('div',{staticClass:"k-moniter-chart",attrs:{"role":"img","aria-label":_vm.$t('moniter.chart')}},[_c('span',{staticClass:"k-moniter-chart-max"},[_vm._v(_vm._s(_vm.num(_vm.max)))]),_c('div',{staticClass:"k-moniter-chart-bars",on:{"pointermove":_vm.onMove,"pointerdown":_vm.onMove,"pointerleave":function($event){_vm.hover = null}}},_vm._l((_vm.buckets),function(b,i){return _c('div',{key:b.key,staticClass:"k-moniter-chart-col",attrs:{"data-i":i}},[_c('div',{staticClass:"k-moniter-chart-bar",class:{ zero: !b.views, active: _vm.hover && _vm.hover.b === b },style:({ height: (b.views / _vm.max) * 100 + '%' })})])}),0),_c('div',{staticClass:"k-moniter-chart-axis"},[_c('span',[_vm._v(_vm._s(_vm.buckets[0].label))]),_c('span',[_vm._v(_vm._s(_vm.buckets[_vm.buckets.length - 1].label))])])]),(_vm.hover)?_c('div',{staticClass:"k-moniter-tip",style:({ left: _vm.hover.x + 'px', top: _vm.hover.y + 'px' })},[_vm._v(" "+_vm._s(_vm.num(_vm.hover.b.views))+" "+_vm._s(_vm.$t(_vm.hover.b.views > 1 ? 'moniter.views' : 'moniter.view'))+" "),_c('span',{staticClass:"k-moniter-muted"},[_vm._v("· "+_vm._s(_vm.hover.b.label))])]):_vm._e()]),_c('div',{staticClass:"k-moniter-grid"},_vm._l((_vm.boxes),function(box){return _c('section',{key:box.key,staticClass:"k-moniter-block",class:{ 'k-moniter-wide': box.wide, 'k-moniter-full': box.map && _vm.map },attrs:{"data-tone":box.tone}},[_c('h2',{staticClass:"k-moniter-caption"},[_vm._v(_vm._s(_vm.$t('moniter.' + box.key)))]),(box.map && _vm.map)?_c('div',{staticClass:"k-moniter-map-layout"},[_c('k-moniter-map',{attrs:{"src":_vm.map,"countries":_vm.stats.countries}}),_c('k-moniter-list',{attrs:{"items":box.items,"limit":box.limit}})],1):_c('k-moniter-list',{attrs:{"items":box.items,"shares":box.shares !== false,"limit":box.limit || 10}})],1)}),0),_c('p',{staticClass:"k-moniter-privacy"},[_vm._v(_vm._s(_vm.$t('moniter.privacy')))])],_c('footer',{staticClass:"k-moniter-ink k-moniter-footer"},[_c('span',[_vm._v("moniter")]),_c('a',{attrs:{"href":"https://rollinger.design","target":"_blank","rel":"noopener"}},[_vm._v("rollinger.design")])])],2)])
 }
 var staticRenderFns = []
 return { render, staticRenderFns }

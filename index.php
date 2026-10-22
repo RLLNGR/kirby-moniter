@@ -15,6 +15,46 @@ function moniterAuthorized(): bool
     return !empty($key) && hash_equals($key, $provided);
 }
 
+/**
+ * Version du paquet système qui fournit PHP (ex. « 8.5.4-0ubuntu1.5 »), lue dans la base dpkg.
+ * Debian / Ubuntu corrigent leurs paquets sans changer PHP_VERSION : seule cette version dit si un correctif est là.
+ * null hors Debian / Ubuntu, ou si l'hébergeur ne laisse pas lire /var/lib/dpkg (open_basedir).
+ */
+function moniterPhpPackage(): ?string
+{
+    $branch = PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION;
+    // Le paquet du mode d'exécution en priorité : c'est son binaire qui sert les pages
+    $sapi = match (PHP_SAPI) {
+        'fpm-fcgi'       => "php{$branch}-fpm",
+        'apache2handler' => "libapache2-mod-php{$branch}",
+        'cgi-fcgi'       => "php{$branch}-cgi",
+        default          => null,
+    };
+    $common = "php{$branch}-common";
+
+    $handle = @fopen('/var/lib/dpkg/status', 'r');
+    if ($handle === false) return null;
+
+    $found     = [];
+    $package   = null;
+    $installed = false;
+    while (($line = fgets($handle)) !== false) {
+        if (str_starts_with($line, 'Package: ')) {
+            $package   = trim(substr($line, 9));
+            $installed = false;
+        } elseif (str_starts_with($line, 'Status: ')) {
+            // « install ok installed » ; pas « deinstall ok config-files » ni « half-installed »
+            $installed = str_ends_with(trim($line), ' ok installed');
+        } elseif (str_starts_with($line, 'Version: ') && $installed && in_array($package, [$sapi, $common], true)) {
+            $found[$package] = trim(substr($line, 9));
+            if ($package === $sapi) break;
+        }
+    }
+    fclose($handle);
+
+    return $found[$sapi] ?? $found[$common] ?? null;
+}
+
 /** Vue Audience du Panel : `moniter.panel` = true (tous), false (personne) ou une liste de rôles */
 function moniterPanelAccess(): bool
 {
@@ -26,7 +66,7 @@ function moniterPanelAccess(): bool
 
 Kirby::plugin('rllngr/kirby-moniter', [
     'info' => [
-        'version' => '1.5.1',
+        'version' => '1.6.0',
     ],
     // Vue Audience dans le Panel (Kirby ≥ 4 : k-panel-inside n'existe pas en 3)
     'areas' => version_compare(Kirby::version(), '4.0.0', '>=') ? [
@@ -174,6 +214,9 @@ Kirby::plugin('rllngr/kirby-moniter', [
                 return Response::json([
                     'kirby'   => $kirbyVersion,
                     'php'     => PHP_VERSION,
+                    // Paquet Debian / Ubuntu (null ailleurs) et mode d'exécution (fpm-fcgi, apache2handler, litespeed…)
+                    'php_package' => moniterPhpPackage(),
+                    'php_sapi'    => PHP_SAPI,
                     'plugins' => $plugins,
                     'stats'   => option('moniter.stats', true) && Stats::available(),
                     'content' => [

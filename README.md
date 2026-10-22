@@ -51,7 +51,9 @@ Header: X-Moniter-Key: <key>
 ```json
 {
   "kirby": "5.3.2",
-  "php": "8.3.0",
+  "php": "8.3.6",
+  "php_package": "8.3.6-0ubuntu0.24.04.13",
+  "php_sapi": "fpm-fcgi",
   "stats": true,
   "plugins": {
     "author/plugin": "1.2.0"
@@ -66,6 +68,8 @@ Header: X-Moniter-Key: <key>
   }
 }
 ```
+
+`php_package` is the version of the Debian / Ubuntu package that runs PHP, read from `/var/lib/dpkg/status`: these distributions ship security fixes without changing `PHP_VERSION`, so `8.3.6` alone cannot tell a patched server from an unpatched one. It is `null` on other systems, or when the host does not let PHP read that file (`open_basedir`). `php_sapi` is how PHP is run (`fpm-fcgi`, `apache2handler`, `cgi-fcgi`, `litespeed`…).
 
 `stats` tells Moniter whether page views are counted (option on and `pdo_sqlite` available). `content` lists the published pages (drafts excluded), most recently modified first:
 

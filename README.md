@@ -2,7 +2,7 @@
 
 A lightweight Kirby CMS plugin that connects client websites to [Moniter](https://moniter.rollinger.design), a personal dashboard to look after client sites: uptime, Kirby / plugin versions, content activity, cookieless audience and monthly reports.
 
-The plugin exposes two secured endpoints (`/moniter/status`, `/moniter/stats`), counts page views without cookies, and adds an **Audience** view to the Panel that works on its own, without Moniter.
+The plugin exposes three secured endpoints (`/moniter/status`, `/moniter/stats`, `/moniter/seo`), counts page views without cookies, and adds an **Audience** view to the Panel that works on its own, without Moniter.
 
 ## What Moniter does with it
 
@@ -133,6 +133,8 @@ export default defineNuxtConfig({
 If the front has a CSP, allow the CMS domain in `script-src` and `connect-src`. The `moniter.client.ts` plugin from earlier versions keeps working (page views, time, country, language) but sends no device, entries or actions: replace it with the script.
 
 ### Export
+
+`GET /moniter/seo` (same header) returns the SEO score computed by [kirby-visibilizer](https://github.com/rllngr/kirby-visibilizer), or a `501` when that plugin isn't installed. Each call also checks up to 25 external links not checked yet.
 
 ```
 GET /moniter/stats?since=YYYY-MM-DD

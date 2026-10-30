@@ -66,7 +66,7 @@ function moniterPanelAccess(): bool
 
 Kirby::plugin('rllngr/kirby-moniter', [
     'info' => [
-        'version' => '1.6.0',
+        'version' => '1.7.0',
     ],
     // Vue Audience dans le Panel (Kirby ≥ 4 : k-panel-inside n'existe pas en 3)
     'areas' => version_compare(Kirby::version(), '4.0.0', '>=') ? [
@@ -155,6 +155,18 @@ Kirby::plugin('rllngr/kirby-moniter', [
                     $since = date('Y-m-d', strtotime('-30 days'));
                 }
                 return Response::json(Stats::export($since));
+            },
+        ],
+        [
+            // Note SEO pour Moniter, si kirby-visibilizer est installé (même clé que /moniter/status).
+            // Hors de /moniter/status : l'audit parcourt tout le site.
+            'pattern' => 'moniter/seo',
+            'method'  => 'GET',
+            'action'  => function () {
+                if (!moniterAuthorized()) return Response::json(['error' => 'Unauthorized'], 401);
+                $audit = 'Rllngr\\KirbyVisibilizer\\Audit';
+                if (!method_exists($audit, 'summary')) return Response::json(['error' => 'kirby-visibilizer manquant'], 501);
+                return Response::json((new $audit(kirby()))->summary(25));
             },
         ],
         [

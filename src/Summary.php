@@ -14,10 +14,11 @@ class Summary
     const PERIODS = ['7', '30', 'month', '90', '365'];
 
     // Hôte d'origine → famille. L'ordre compte : gemini.google.com et mail.google.com avant google.
+    // Mêmes listes que server/src/referrers.js côté Moniter (un test les compare) : toute modification se fait des deux côtés.
     const REFERRER_KINDS = [
-        'ai'     => '/(^|\.)(chatgpt\.com|openai\.com|perplexity\.ai|claude\.ai|gemini\.google\.com|copilot\.microsoft\.com|mistral\.ai)$/',
+        'ai'     => '/(^|\.)(chatgpt\.com|openai\.com|perplexity\.ai|claude\.ai|gemini\.google\.com|copilot\.microsoft\.com|copilot\.cloud\.microsoft|m365\.cloud\.microsoft|mistral\.ai|grok\.com|x\.ai|deepseek\.com|meta\.ai|duck\.ai|you\.com)$/',
         'mail'   => '/(^|\.)(mail\.google\.com|outlook\.(live|office)\.com|mail\.yahoo\.com|webmail\.|mail\.)/',
-        'search' => '/(^|\.)(google\.[a-z.]+|bing\.com|duckduckgo\.com|ecosia\.org|qwant\.com|search\.yahoo\.com|yahoo\.com|yandex\.[a-z]+|baidu\.com|startpage\.com|search\.brave\.com|lilo\.org)$/',
+        'search' => '/(^|\.)(google\.[a-z.]+|bing\.com|duckduckgo\.com|ecosia\.org|qwant\.com|search\.yahoo\.com|yahoo\.com|yandex\.[a-z]+|baidu\.com|startpage\.com|search\.brave\.com|lilo\.org|kagi\.com)$/',
         'social' => '/(^|\.)(facebook\.com|fb\.com|instagram\.com|t\.co|twitter\.com|x\.com|linkedin\.com|lnkd\.in|pinterest\.[a-z.]+|pin\.it|youtube\.com|tiktok\.com|reddit\.com|threads\.net|bsky\.app|mastodon\.[a-z]+|whatsapp\.com|wa\.me)$/',
     ];
 
@@ -116,6 +117,29 @@ class Summary
     }
 
     /**
+     * Arrivées venues d'un assistant IA mais rangées en campagne : avant la 1.8, une visite sans adresse d'origine
+     * avec utm_source=chatgpt.com comptait comme « directe » + campagne « chatgpt.com ». Avec adresse d'origine,
+     * elle comptait en référent ET en campagne : par jour, seul l'excédent campagne − référent est donc sans origine.
+     * Depuis la 1.8 ces campagnes ne sont plus enregistrées, l'excédent vaut 0. Retourne [domaine => arrivées].
+     */
+    public static function aiFromCampaigns(array $campaigns, array $referrers): array
+    {
+        $seen = [];
+        foreach ($referrers as $r) {
+            $key = $r['day'] . '|' . preg_replace('/^www\./', '', strtolower($r['host']));
+            $seen[$key] = ($seen[$key] ?? 0) + $r['views'];
+        }
+        $extra = [];
+        foreach ($campaigns as $c) {
+            $host = Stats::aiSource($c['name']);
+            if ($host === null) continue;
+            $n = $c['views'] - ($seen[$c['day'] . '|' . $host] ?? 0);
+            if ($n > 0) $extra[$host] = ($extra[$host] ?? 0) + $n;
+        }
+        return $extra;
+    }
+
+    /**
      * Pays d'un visiteur : le fuseau d'abord. La région de la langue (« fr-BE » → BE) ne tranche qu'entre
      * les pays d'un fuseau partagé, ou quand le fuseau ne dit rien (UTC des navigateurs anti-pistage).
      */
@@ -136,6 +160,32 @@ class Summary
         } catch (Throwable $e) {
             return $code;
         }
+    }
+
+    /**
+     * Bloc « IA » : visites humaines venues d'un assistant (un minimum : applis sans adresse d'origine et
+     * réponses IA de Google, qui arrivent en google.com, ne sont pas identifiables) et passages des robots d'IA.
+     */
+    private static function ai(array $hosts, array $span): array
+    {
+        $assistants = array_values(array_filter($hosts, fn ($h) => static::referrerKind($h['host']) === 'ai'));
+        $bots = array_map(fn ($b) => [
+            'name' => $b['name'], 'family' => Stats::botFamily($b['name']) ?? 'other', 'views' => (int) $b['views'],
+        ], static::all('SELECT name, SUM(n) AS views FROM bots WHERE day >= ? AND day < ? GROUP BY name ORDER BY views DESC', $span));
+        $families = ['user' => 0, 'search' => 0, 'training' => 0];
+        foreach ($bots as $b) $families[$b['family']] = ($families[$b['family']] ?? 0) + $b['views'];
+        return [
+            'visits'     => (int) array_sum(array_column($assistants, 'views')),
+            'assistants' => array_map(fn ($h) => ['host' => $h['host'], 'views' => (int) $h['views']], $assistants),
+            'bots'       => $bots,
+            'families'   => $families,
+            'bot_pages'  => array_map(
+                fn ($p) => ['path' => $p['path'], 'views' => (int) $p['views']],
+                static::all('SELECT path, SUM(n) AS views FROM bot_pages WHERE day >= ? AND day < ? GROUP BY path ORDER BY views DESC LIMIT 10', $span)
+            ),
+            // Les robots ne sont comptés que depuis la 1.8 : l'interface le dit plutôt que d'afficher un zéro trompeur
+            'bots_since' => static::firstDay('bots'),
+        ];
     }
 
     public static function summary(string $period, string $locale = 'fr'): array
@@ -183,12 +233,24 @@ class Summary
             static::all('SELECT host, SUM(n) AS views FROM referrers WHERE day >= ? AND day < ? GROUP BY host ORDER BY views DESC', $span),
             fn ($h) => preg_replace('/^www\./', '', $h['host']) !== static::MONITER_HOST
         ));
+        // Assistants IA rangés en campagne (plugin < 1.8) : rendus à leur domaine, retirés des accès directs
+        $aiExtra = static::aiFromCampaigns(
+            static::all('SELECT day, name, n AS views FROM campaigns WHERE day >= ? AND day < ?', $span),
+            static::all('SELECT day, host, n AS views FROM referrers WHERE day >= ? AND day < ?', $span)
+        );
+        foreach ($aiExtra as $host => $n) {
+            $i = array_search($host, array_map(fn ($h) => preg_replace('/^www\./', '', strtolower($h['host'])), $hosts), true);
+            if ($i === false) $hosts[] = ['host' => $host, 'views' => $n];
+            else $hosts[$i]['views'] += $n;
+        }
+        usort($hosts, fn ($a, $b) => $b['views'] <=> $a['views']);
         $kinds = [];
         foreach ($hosts as $h) {
             $kind = static::referrerKind($h['host']);
             $kinds[$kind] = ($kinds[$kind] ?? 0) + $h['views'];
         }
-        if ($current['direct']) $kinds['direct'] = $current['direct'];
+        $direct = max(0, (int) $current['direct'] - array_sum($aiExtra));
+        if ($direct) $kinds['direct'] = $direct;
         arsort($kinds);
         $sources = array_map(fn ($kind, $views) => ['kind' => $kind, 'views' => (int) $views], array_keys($kinds), $kinds);
 
@@ -236,8 +298,13 @@ class Summary
             'devices'     => $int(static::all('SELECT type, SUM(n) AS views FROM devices WHERE day >= ? AND day < ? GROUP BY type ORDER BY views DESC', $span), ['views']),
             'actions'     => $int(static::all('SELECT type, target, SUM(n) AS clicks FROM actions WHERE day >= ? AND day < ?
                                                GROUP BY type, target ORDER BY clicks DESC LIMIT 12', $span), ['clicks']),
-            'campaigns'   => $int(static::all('SELECT name, SUM(n) AS views FROM campaigns WHERE day >= ? AND day < ?
-                                               GROUP BY name ORDER BY views DESC LIMIT 8', $span), ['views']),
+            // Sans les « campagnes » qui ne sont que le domaine d'un assistant IA (comptées en provenance)
+            'campaigns'   => array_slice(array_values(array_filter(
+                $int(static::all('SELECT name, SUM(n) AS views FROM campaigns WHERE day >= ? AND day < ?
+                                  GROUP BY name ORDER BY views DESC', $span), ['views']),
+                fn ($c) => Stats::aiSource($c['name']) === null
+            )), 0, 8),
+            'ai'          => static::ai($hosts, $span),
         ];
     }
 }

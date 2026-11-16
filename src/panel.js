@@ -211,6 +211,16 @@ panel.plugin('rllngr/kirby-moniter', {
         campaigns() {
           return this.stats.campaigns.map(c => ({ key: c.name, name: c.name, value: c.views }))
         },
+        // IA : visites humaines venues d'un assistant, robots d'IA par famille, pages lues à la demande d'un utilisateur
+        aiAssistants() {
+          return this.stats.ai.assistants.map(a => ({ key: a.host, name: a.host, value: a.views }))
+        },
+        aiBots() {
+          return this.stats.ai.bots.map(b => ({ key: b.name, name: b.name, note: this.$t('moniter.bot.' + b.family), value: b.views }))
+        },
+        aiPages() {
+          return this.stats.ai.bot_pages.map(p => ({ key: p.path, name: this.page(p.path), hint: p.path, value: p.views }))
+        },
         // Blocs de listes, dans l'ordre de Moniter ; un bloc vide n'est pas affiché
         boxes() {
           return [
@@ -223,6 +233,9 @@ panel.plugin('rllngr/kirby-moniter', {
             { key: 'languages', items: this.languages, limit: 6 },
             { key: 'actions', items: this.actions, shares: false, limit: 12 },
             { key: 'campaigns', items: this.campaigns, shares: false },
+            { key: 'ai_assistants', items: this.aiAssistants, shares: false, note: 'ai_minimum' },
+            { key: 'ai_bots', items: this.aiBots, shares: false, limit: 12 },
+            { key: 'ai_pages', items: this.aiPages, shares: false, wide: true },
           ].filter(b => b.items.length)
         },
       },
@@ -329,6 +342,7 @@ panel.plugin('rllngr/kirby-moniter', {
                     <k-moniter-list :items="box.items" :limit="box.limit" />
                   </div>
                   <k-moniter-list v-else :items="box.items" :shares="box.shares !== false" :limit="box.limit || 10" />
+                  <p v-if="box.note" class="k-moniter-note">{{ $t('moniter.' + box.note) }}</p>
                 </section>
               </div>
 

@@ -375,3 +375,10 @@
   aspect-ratio: 1000 / 520;
   background: var(--m-hover);
 }
+
+/* Précision sous une liste (bloc IA : le chiffre est un minimum) */
+.k-moniter-note {
+  margin-top: 0.75rem;
+  color: var(--m-muted);
+  font-size: 0.78rem;
+}

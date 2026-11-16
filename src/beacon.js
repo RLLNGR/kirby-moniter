@@ -80,7 +80,11 @@
     var entry = first && !reload && refHost !== location.host
 
     var data = { p: path, r: entry ? referrer : '', z: tz, l: navigator.language || '', g: region(), d: device(), e: entry ? 1 : 0 }
-    if (entry) data.c = campaign()
+    if (entry) {
+      data.c = campaign()
+      // utm_source à part : ChatGPT l'ajoute à ses liens, seul indice quand l'appli n'envoie pas d'adresse d'origine
+      data.s = new URLSearchParams(location.search).get('utm_source') || ''
+    }
     send('hit', data)
 
     if (reload) return

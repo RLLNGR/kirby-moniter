@@ -66,7 +66,7 @@ function moniterPanelAccess(): bool
 
 Kirby::plugin('rllngr/kirby-moniter', [
     'info' => [
-        'version' => '1.7.0',
+        'version' => '1.8.0',
     ],
     // Vue Audience dans le Panel (Kirby ≥ 4 : k-panel-inside n'existe pas en 3)
     'areas' => version_compare(Kirby::version(), '4.0.0', '>=') ? [
@@ -117,6 +117,13 @@ Kirby::plugin('rllngr/kirby-moniter', [
             $tag = '<script src="' . url('moniter/beacon.js') . '" defer></script>';
             return preg_replace('#</body>#i', $tag . '</body>', $html, 1);
         },
+        // Robots d'IA : ils n'exécutent pas le beacon, on les compte quand Kirby leur sert une page
+        // (le cache de pages passe aussi par ici). Un compteur par jour et par robot, rien d'autre.
+        'route:after' => function ($route, $path, $method, $result, $final) {
+            if ($final && $method === 'GET' && $result instanceof \Kirby\Cms\Page && option('moniter.stats', true)) {
+                Stats::handleBotVisit($_SERVER['HTTP_USER_AGENT'] ?? null, (string) $path);
+            }
+        },
     ],
     'routes' => [
         [
@@ -140,6 +147,16 @@ Kirby::plugin('rllngr/kirby-moniter', [
                         'action'   => Stats::handleAction(),
                     };
                 }
+                return new Response('', 'text/plain', 204);
+            },
+        ],
+        [
+            // Passage d'un robot d'IA signalé par le serveur d'un front headless (même clé que /moniter/status)
+            'pattern' => 'moniter/bot',
+            'method'  => 'POST',
+            'action'  => function () {
+                if (!moniterAuthorized()) return Response::json(['error' => 'Unauthorized'], 401);
+                if (option('moniter.stats', true)) Stats::handleBotReport();
                 return new Response('', 'text/plain', 204);
             },
         ],

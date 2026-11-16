@@ -132,6 +132,24 @@ export default defineNuxtConfig({
 
 If the front has a CSP, allow the CMS domain in `script-src` and `connect-src`. The `moniter.client.ts` plugin from earlier versions keeps working (page views, time, country, language) but sends no device, entries or actions: replace it with the script.
 
+### AI assistants and AI bots (v1.8.0)
+
+**Visits coming from AI assistants** are a referrer family of their own (`chatgpt.com`, `perplexity.ai`, `claude.ai`, `gemini.google.com`, Copilot, Mistral, Grok, DeepSeek, Meta AI, Duck.ai, You.com). Since v1.8.0 an entry with **no referrer** whose `utm_source` is one of these domains (ChatGPT adds `utm_source=chatgpt.com` to its links; its apps send no referrer) is stored as coming from that domain — no longer as *direct* + a campaign named `chatgpt.com`. The figure remains a **minimum**: clicks from apps that send neither referrer nor `utm_source`, and Google's AI answers (AI Overviews / AI Mode arrive as `google.com`), cannot be told apart.
+
+**AI bots** never run the beacon, so they are counted where pages are served: one counter per day and per bot (table `bots`), nothing else — no IP, no User-Agent. For the bots sent by a user's question, the page read is also counted (table `bot_pages`, all bots together, never page × bot). They stay out of the human page views.
+
+| Family | Bots |
+| --- | --- |
+| `training` | GPTBot, ClaudeBot, CCBot, meta-externalagent, MistralAI-Training, Amazonbot |
+| `search` | OAI-SearchBot, PerplexityBot, Claude-SearchBot, meta-webindexer, MistralAI-Index, Amzn-SearchBot, Applebot, DuckAssistBot |
+| `user` (someone asked a question and the assistant went to read the page) | ChatGPT-User, Perplexity-User, Claude-User, meta-externalfetcher, MistralAI-User, Amzn-User, Google-Agent, Google-GeminiNotebook |
+
+`Google-Extended` and `Applebot-Extended` are not in the list: they are `robots.txt` tokens, never sent as a User-Agent.
+
+- **Kirby sites**: nothing to do (a `route:after` hook counts the pages Kirby serves, page cache included).
+- **Headless / Nuxt**: Kirby does not see the front's pages. Copy [`nuxt/moniter-bots.ts`](nuxt/moniter-bots.ts) into the front's `server/middleware/` and set `NUXT_MONITER_URL` (the CMS address) and `NUXT_MONITER_KEY` (`moniter.key`). It posts `{ ua, p }` to `POST /moniter/bot` (header `X-Moniter-Key`, `401` without it) without waiting for the answer; the User-Agent is only read to recognise the bot.
+- A page answered by a cache in front of the site (CDN, static cache) is seen by neither.
+
 ### Export
 
 `GET /moniter/seo` (same header) returns the SEO score computed by [kirby-visibilizer](https://github.com/rllngr/kirby-visibilizer), or a `501` when that plugin isn't installed. Each call also checks up to 25 external links not checked yet.
@@ -150,7 +168,9 @@ Header: X-Moniter-Key: <key>
   "devices": [{ "d": "2026-10-02", "t": "mobile", "v": 8 }],
   "entries": [{ "d": "2026-10-02", "p": "/", "v": 6, "c": 2, "x": 3 }],
   "actions": [{ "d": "2026-10-02", "t": "tel", "g": "+33233000000", "v": 1 }],
-  "campaigns": [{ "d": "2026-10-02", "c": "newsletter-octobre", "v": 2 }] }
+  "campaigns": [{ "d": "2026-10-02", "c": "newsletter-octobre", "v": 2 }],
+  "bots": [{ "d": "2026-10-02", "b": "ChatGPT-User", "f": "user", "v": 4 }],
+  "bot_pages": [{ "d": "2026-10-02", "p": "/projets", "v": 3 }] }
 ```
 
 `entries`: `v` arrivals on the page, `c` of which continued to another page, `x` of which had no referrer.

@@ -55,6 +55,15 @@ return [
     'moniter.action.out'        => 'Link to',
     'moniter.action.file'       => 'File',
 
+    'moniter.ai_assistants'     => 'Visits from AI assistants',
+    'moniter.ai_minimum'        => "A minimum: clicks from apps and Google's AI answers (which arrive as google.com) cannot all be identified.",
+    'moniter.ai_bots'           => 'AI bot visits',
+    'moniter.ai_pages'          => "Pages read by AIs at a user's request",
+    'moniter.bot.user'          => "at a user's request",
+    'moniter.bot.search'        => 'search',
+    'moniter.bot.training'      => 'training',
+    'moniter.bot.other'         => 'other',
+
     'moniter.empty'             => 'No visits recorded yet. Page views will show up here after the first visits.',
     'moniter.error.disabled'    => 'Audience measurement is turned off on this site.',
     'moniter.error.sqlite'      => 'The PHP extension pdo_sqlite is missing on the server: nothing is counted.',

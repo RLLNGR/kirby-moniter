@@ -55,6 +55,15 @@ return [
     'moniter.action.out'        => 'Lien vers',
     'moniter.action.file'       => 'Fichier',
 
+    'moniter.ai_assistants'     => 'Visites venues des assistants IA',
+    'moniter.ai_minimum'        => "Un minimum : les clics depuis les applications et les réponses IA de Google (qui arrivent comme google.com) ne sont pas tous identifiables.",
+    'moniter.ai_bots'           => "Passages des robots d'IA",
+    'moniter.ai_pages'          => "Pages lues par les IA à la demande d'un utilisateur",
+    'moniter.bot.user'          => "à la demande d'un utilisateur",
+    'moniter.bot.search'        => 'recherche',
+    'moniter.bot.training'      => 'entraînement',
+    'moniter.bot.other'         => 'autre',
+
     'moniter.empty'             => "Aucune visite enregistrée pour l'instant. Les pages vues apparaîtront ici dès les premières visites.",
     'moniter.error.disabled'    => "La mesure d'audience est désactivée sur ce site.",
     'moniter.error.sqlite'      => "L'extension PHP pdo_sqlite manque sur le serveur : rien n'est compté.",

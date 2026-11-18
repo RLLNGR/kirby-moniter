@@ -55,6 +55,17 @@ function moniterPhpPackage(): ?string
     return $found[$sapi] ?? $found[$common] ?? null;
 }
 
+/**
+ * Bouton « Google Analytics » de la vue Audience, pour les sites qui l'ont aussi : `moniter.analytics` = true
+ * (https://analytics.google.com/) ou l'adresse d'une propriété précise. Rien par défaut ; seules les adresses https passent.
+ */
+function moniterAnalyticsUrl(): ?string
+{
+    $option = option('moniter.analytics', false);
+    if ($option === true) return 'https://analytics.google.com/';
+    return is_string($option) && str_starts_with($option, 'https://') ? $option : null;
+}
+
 /** Vue Audience du Panel : `moniter.panel` = true (tous), false (personne) ou une liste de rôles */
 function moniterPanelAccess(): bool
 {
@@ -98,6 +109,7 @@ Kirby::plugin('rllngr/kirby-moniter', [
                                 'stats'  => $error ? null : Summary::summary($period, kirby()->user()->language()),
                                 // Tracés des pays (Natural Earth 110m, domaine public), chargés seulement s'il y a des pays
                                 'map'    => kirby()->plugin('rllngr/kirby-moniter')->asset('world-110m.json')?->url(),
+                                'analytics' => moniterAnalyticsUrl(),
                             ],
                         ];
                     },

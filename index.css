@@ -120,6 +120,27 @@
   text-underline-offset: 0.15em;
 }
 
+/* Lien vers un autre outil d'audience (Google Analytics), sous la barre */
+.k-moniter-tools {
+  display: flex;
+  justify-content: flex-end;
+  margin: calc(-1 * var(--m-gutter) + 0.5rem) 0 var(--m-gutter);
+}
+.k-moniter-button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  padding: 0 0.9rem;
+  background: var(--m-surface);
+  color: var(--m-text);
+  font-size: 0.82rem;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.k-moniter-button:hover {
+  background: color-mix(in srgb, var(--m-text) 8%, var(--m-surface));
+}
+
 /* ── Blocs ──────────────────────────────────────── */
 .k-moniter-block {
   min-width: 0;

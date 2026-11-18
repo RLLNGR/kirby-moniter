@@ -119,6 +119,7 @@ panel.plugin('rllngr/kirby-moniter', {
         error: String,
         stats: Object,
         map: String,
+        analytics: String, // adresse Google Analytics (option moniter.analytics), sinon null
       },
       data: () => ({ PERIODS, hover: null }),
       computed: {
@@ -286,6 +287,10 @@ panel.plugin('rllngr/kirby-moniter', {
                 >{{ $t('moniter.period.' + p) }}</button>
               </nav>
             </header>
+
+            <p v-if="analytics" class="k-moniter-tools">
+              <a :href="analytics" class="k-moniter-button" target="_blank" rel="noopener">{{ $t('moniter.analytics') }} ↗</a>
+            </p>
 
             <p v-if="error" class="k-moniter-block k-moniter-message">{{ $t('moniter.error.' + error) }}</p>
             <p v-else-if="!hasData" class="k-moniter-block k-moniter-message">{{ $t('moniter.empty') }}</p>

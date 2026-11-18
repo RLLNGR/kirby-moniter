@@ -195,6 +195,17 @@ Kirby 3 sites keep working, without the Panel view.
 
 Works with `'panel' => ['vue' => ['compiler' => false]]` (a CSP without `'unsafe-eval'`) since v1.5.1: the view ships precompiled render functions. Before that it rendered a blank page there, with no error.
 
+#### Google Analytics button
+
+For sites that also run Google Analytics, the view can show a button that opens it in a new tab (nothing is read from or sent to Google):
+
+```php
+'moniter.analytics' => true,  // opens https://analytics.google.com/
+'moniter.analytics' => 'https://analytics.google.com/analytics/web/#/p123456789/reports/intelligenthome', // a given property
+```
+
+Off by default; only `https://` addresses are accepted.
+
 #### Changing the view
 
 The Panel code lives in `src/panel.js`, written with ordinary `template` strings. `index.js` is generated from it - edit the source, then:

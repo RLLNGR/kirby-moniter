@@ -64,6 +64,7 @@ return [
     'moniter.bot.training'      => 'training',
     'moniter.bot.other'         => 'other',
 
+    'moniter.analytics'         => 'Open Google Analytics',
     'moniter.empty'             => 'No visits recorded yet. Page views will show up here after the first visits.',
     'moniter.error.disabled'    => 'Audience measurement is turned off on this site.',
     'moniter.error.sqlite'      => 'The PHP extension pdo_sqlite is missing on the server: nothing is counted.',

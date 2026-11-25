@@ -6,6 +6,6 @@
     "build": "node scripts/build-panel.mjs"
   },
   "devDependencies": {
-    "vue": "2.7.16"
+    "@vue/compiler-dom": "3.5.26"
   }
 }

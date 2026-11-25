@@ -76,8 +76,9 @@ function moniterPanelAccess(): bool
 }
 
 Kirby::plugin('rllngr/kirby-moniter', [
-    // Vue Audience dans le Panel (Kirby ≥ 4 : k-panel-inside n'existe pas en 3)
-    'areas' => version_compare(Kirby::version(), '4.0.0', '>=') ? [
+    // Vue Audience dans le Panel : 2.x est compilée pour le Panel Vue 3 de Kirby 6.
+    // Sur Kirby 3 à 5, le reste du plugin marche et la vue n'est pas proposée : garder 1.x pour l'avoir.
+    'areas' => version_compare(Kirby::version(), '6.0.0', '>=') ? [
         'moniter' => fn () => [
             'label' => t('moniter.audience'),
             'icon'  => 'chart',
@@ -267,5 +268,5 @@ Kirby::plugin('rllngr/kirby-moniter', [
         ],
     ],
 ], info: [
-    'version' => '1.8.0',
+    'version' => '2.0.0',
 ]);

@@ -1,6 +1,6 @@
 // Vue Audience du Panel — données calculées en PHP (src/Summary.php), passées en props par la zone `moniter`.
 // Habillage de Moniter (et du rapport mensuel) : crème, barres d'encre en minuscules, blocs blancs, pastilles.
-// Pas d'étape de build : le Panel embarque le compilateur de templates de Vue.
+// Précompilé par scripts/build-panel.mjs en fonctions de rendu Vue 3 (Kirby 6).
 
 const PERIODS = ['7', '30', 'month', '90', '365']
 

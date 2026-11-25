@@ -182,7 +182,7 @@ Since v1.5.0 the Panel gets an **Audience** entry in its menu (`/panel/audience`
 - Key figures for 7 days, 30 days, this month, 90 days or 1 year, compared to the previous period of the same length (only when that period was fully measured).
 - Page views per day (per month over 1 year), most read pages, entry pages and bounce, sources, referring sites, devices, languages, clicks, campaigns.
 - Page views per country on a world map (Natural Earth 110m, public domain, `assets/world-110m.json`, loaded only when there are countries).
-- Same calculations and same look as the Moniter dashboard and its monthly report (cream, ink bars, coloured cards). Follows the Panel's light / dark theme on Kirby 5.
+- Same calculations and same look as the Moniter dashboard and its monthly report (cream, ink bars, coloured cards). Follows the Panel's light / dark theme.
 - Labels in French and English (other Panel languages fall back to English).
 
 ```php
@@ -191,9 +191,9 @@ return [
 ];
 ```
 
-Kirby 3 sites keep working, without the Panel view.
+**Kirby versions.** From v2.0 the view is built for Kirby 6, whose Panel runs on Vue 3. On Kirby 3, 4 and 5 everything else keeps working (status, beacon, stats) and the Audience entry is simply not shown: stay on v1.x (`"rllngr/kirby-moniter": "^1.8"`) to keep it there.
 
-Works with `'panel' => ['vue' => ['compiler' => false]]` (a CSP without `'unsafe-eval'`) since v1.5.1: the view ships precompiled render functions. Before that it rendered a blank page there, with no error.
+The view ships precompiled render functions, so it does not depend on Vue's template compiler being available at runtime (a CSP without `'unsafe-eval'`).
 
 #### Google Analytics button
 
@@ -212,7 +212,7 @@ The Panel code lives in `src/panel.js`, written with ordinary `template` strings
 
 ```bash
 npm install
-npm run build   # scripts/build-panel.mjs → index.js, commit both
+npm run build   # scripts/build-panel.mjs → index.js (Vue 3 render functions), commit both
 ```
 
 ## Security

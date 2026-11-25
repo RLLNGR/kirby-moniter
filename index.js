@@ -1,7 +1,8 @@
 // GÉNÉRÉ par scripts/build-panel.mjs depuis src/panel.js — ne pas modifier ici, puis : npm run build
+import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, normalizeStyle as _normalizeStyle, createElementVNode as _createElementVNode, toDisplayString as _toDisplayString, createCommentVNode as _createCommentVNode, normalizeClass as _normalizeClass, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, createVNode as _createVNode, createBlock as _createBlock, withCtx as _withCtx } from 'vue'
 // Vue Audience du Panel — données calculées en PHP (src/Summary.php), passées en props par la zone `moniter`.
 // Habillage de Moniter (et du rapport mensuel) : crème, barres d'encre en minuscules, blocs blancs, pastilles.
-// Pas d'étape de build : le Panel embarque le compilateur de templates de Vue.
+// Précompilé par scripts/build-panel.mjs en fonctions de rendu Vue 3 (Kirby 6).
 
 const PERIODS = ['7', '30', 'month', '90', '365']
 
@@ -35,11 +36,39 @@ const MoniterList = {
       return (n >= 10 ? Math.round(n) : n.toLocaleString(locale(), { maximumFractionDigits: 1 })) + ' %'
     },
   },
-  ...(() => {
-var render = function render(){var _vm=this,_c=_vm._self._c;return _c('ol',{staticClass:"k-moniter-list"},_vm._l((_vm.rows),function(row){return _c('li',{key:row.key},[_c('span',{staticClass:"k-moniter-list-bar",style:({ width: row.bar * 100 + '%' })}),_c('span',{staticClass:"k-moniter-list-name",attrs:{"title":row.hint || row.name}},[_vm._v(_vm._s(row.name))]),(row.note)?_c('span',{staticClass:"k-moniter-list-note"},[_vm._v(_vm._s(row.note))]):_vm._e(),_c('span',{staticClass:"k-moniter-list-value"},[_vm._v(_vm._s(_vm.num(row.value)))]),(_vm.shares)?_c('span',{staticClass:"k-moniter-list-share"},[_vm._v(_vm._s(_vm.pct(row.share)))]):_vm._e()])}),0)
+  render: (() => {
+function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("ol", { class: "k-moniter-list" }, [
+    (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.rows, (row) => {
+      return (_openBlock(), _createElementBlock("li", {
+        key: row.key
+      }, [
+        _createElementVNode("span", {
+          class: "k-moniter-list-bar",
+          style: _normalizeStyle({ width: row.bar * 100 + '%' })
+        }, null, 4 /* STYLE */),
+        _createElementVNode("span", {
+          class: "k-moniter-list-name",
+          title: row.hint || row.name
+        }, _toDisplayString(row.name), 9 /* TEXT, PROPS */, ["title"]),
+        (row.note)
+          ? (_openBlock(), _createElementBlock("span", {
+              key: 0,
+              class: "k-moniter-list-note"
+            }, _toDisplayString(row.note), 1 /* TEXT */))
+          : _createCommentVNode("v-if", true),
+        _createElementVNode("span", { class: "k-moniter-list-value" }, _toDisplayString(_ctx.num(row.value)), 1 /* TEXT */),
+        (_ctx.shares)
+          ? (_openBlock(), _createElementBlock("span", {
+              key: 1,
+              class: "k-moniter-list-share"
+            }, _toDisplayString(_ctx.pct(row.share)), 1 /* TEXT */))
+          : _createCommentVNode("v-if", true)
+      ]))
+    }), 128 /* KEYED_FRAGMENT */))
+  ]))
 }
-var staticRenderFns = []
-return { render, staticRenderFns }
+return render
 })(),
 }
 
@@ -78,11 +107,44 @@ const MoniterMap = {
       this.hover = c ? { c, x: e.clientX, y: e.clientY } : null
     },
   },
-  ...(() => {
-var render = function render(){var _vm=this,_c=_vm._self._c;return _c('div',{staticClass:"k-moniter-map"},[(_vm.map)?_c('svg',{attrs:{"viewBox":'0 0 ' + _vm.map.w + ' ' + _vm.map.h,"role":"img","aria-label":_vm.$t('moniter.countries.count', { count: _vm.byCode.size })},on:{"pointermove":_vm.onMove,"pointerleave":function($event){_vm.hover = null}}},_vm._l((_vm.map.paths),function(d,code){return _c('path',{key:code,class:{ on: _vm.byCode.has(code), active: _vm.hover && _vm.hover.c.code === code },style:(_vm.shade(code)),attrs:{"d":d,"data-code":code}})}),0):(_vm.map === null)?_c('div',{staticClass:"k-moniter-map-placeholder"}):_vm._e(),(_vm.hover)?_c('div',{staticClass:"k-moniter-tip",style:({ left: _vm.hover.x + 'px', top: _vm.hover.y + 'px' })},[_vm._v(" "+_vm._s(_vm.hover.c.name)+" · "+_vm._s(_vm.hover.c.views.toLocaleString())+" ")]):_vm._e()])
+  render: (() => {
+function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", { class: "k-moniter-map" }, [
+    (_ctx.map)
+      ? (_openBlock(), _createElementBlock("svg", {
+          key: 0,
+          viewBox: '0 0 ' + _ctx.map.w + ' ' + _ctx.map.h,
+          role: "img",
+          "aria-label": _ctx.$t('moniter.countries.count', { count: _ctx.byCode.size }),
+          onPointermove: _cache[0] || (_cache[0] = (...args) => (_ctx.onMove && _ctx.onMove(...args))),
+          onPointerleave: _cache[1] || (_cache[1] = $event => (_ctx.hover = null))
+        }, [
+          (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.map.paths, (d, code) => {
+            return (_openBlock(), _createElementBlock("path", {
+              key: code,
+              d: d,
+              "data-code": code,
+              class: _normalizeClass({ on: _ctx.byCode.has(code), active: _ctx.hover && _ctx.hover.c.code === code }),
+              style: _normalizeStyle(_ctx.shade(code))
+            }, null, 14 /* CLASS, STYLE, PROPS */, ["d", "data-code"]))
+          }), 128 /* KEYED_FRAGMENT */))
+        ], 40 /* PROPS, NEED_HYDRATION */, ["viewBox", "aria-label"]))
+      : (_ctx.map === null)
+        ? (_openBlock(), _createElementBlock("div", {
+            key: 1,
+            class: "k-moniter-map-placeholder"
+          }))
+        : _createCommentVNode("v-if", true),
+    (_ctx.hover)
+      ? (_openBlock(), _createElementBlock("div", {
+          key: 2,
+          class: "k-moniter-tip",
+          style: _normalizeStyle({ left: _ctx.hover.x + 'px', top: _ctx.hover.y + 'px' })
+        }, _toDisplayString(_ctx.hover.c.name) + " · " + _toDisplayString(_ctx.hover.c.views.toLocaleString()), 5 /* TEXT, STYLE */))
+      : _createCommentVNode("v-if", true)
+  ]))
 }
-var staticRenderFns = []
-return { render, staticRenderFns }
+return render
 })(),
 }
 
@@ -249,11 +311,174 @@ panel.plugin('rllngr/kirby-moniter', {
           this.hover = { b, x: r.left + r.width / 2, y: r.top + r.height * (1 - b.views / this.max) }
         },
       },
-      ...(() => {
-var render = function render(){var _vm=this,_c=_vm._self._c;return _c('k-panel-inside',{staticClass:"k-moniter-view"},[_c('div',{staticClass:"k-moniter"},[_c('header',{staticClass:"k-moniter-ink k-moniter-header"},[_c('h1',[_vm._v(_vm._s(_vm.$t('moniter.audience')))]),_c('nav',{staticClass:"k-moniter-periods"},_vm._l((_vm.PERIODS),function(p){return _c('button',{key:p,attrs:{"type":"button","aria-current":p === _vm.period ? 'true' : null},on:{"click":function($event){return _vm.go(p)}}},[_vm._v(_vm._s(_vm.$t('moniter.period.' + p)))])}),0)]),(_vm.analytics)?_c('p',{staticClass:"k-moniter-tools"},[_c('a',{staticClass:"k-moniter-button",attrs:{"href":_vm.analytics,"target":"_blank","rel":"noopener"}},[_vm._v(_vm._s(_vm.$t('moniter.analytics'))+" ↗")])]):_vm._e(),(_vm.error)?_c('p',{staticClass:"k-moniter-block k-moniter-message"},[_vm._v(_vm._s(_vm.$t('moniter.error.' + _vm.error)))]):(!_vm.hasData)?_c('p',{staticClass:"k-moniter-block k-moniter-message"},[_vm._v(_vm._s(_vm.$t('moniter.empty')))]):[_c('div',{staticClass:"k-moniter-kpis"},_vm._l((_vm.kpis),function(k){return _c('div',{key:k.key,staticClass:"k-moniter-kpi",attrs:{"data-color":k.color}},[_c('div',{staticClass:"k-moniter-kpi-dot",attrs:{"data-size":k.size}},[_c('span',{staticClass:"k-moniter-kpi-value"},[_vm._v(_vm._s(k.text))]),_c('span',{staticClass:"k-moniter-kpi-unit"},[_vm._v(_vm._s(k.unit))])]),_c('p',{staticClass:"k-moniter-kpi-label"},[_vm._v(" "+_vm._s(k.label)+" "),(k.delta)?_c('span',{staticClass:"k-moniter-kpi-delta"},[_vm._v(_vm._s(k.delta))]):_vm._e()])])}),0),_c('p',{staticClass:"k-moniter-compared"},[_vm._v(_vm._s(_vm.compared))]),_c('section',{staticClass:"k-moniter-block"},[_c('h2',{staticClass:"k-moniter-caption"},[_vm._v(_vm._s(_vm.$t(_vm.monthly ? 'moniter.chart.month' : 'moniter.chart.day')))]),_c('div',{staticClass:"k-moniter-chart",attrs:{"role":"img","aria-label":_vm.$t('moniter.chart')}},[_c('span',{staticClass:"k-moniter-chart-max"},[_vm._v(_vm._s(_vm.num(_vm.max)))]),_c('div',{staticClass:"k-moniter-chart-bars",on:{"pointermove":_vm.onMove,"pointerdown":_vm.onMove,"pointerleave":function($event){_vm.hover = null}}},_vm._l((_vm.buckets),function(b,i){return _c('div',{key:b.key,staticClass:"k-moniter-chart-col",attrs:{"data-i":i}},[_c('div',{staticClass:"k-moniter-chart-bar",class:{ zero: !b.views, active: _vm.hover && _vm.hover.b === b },style:({ height: (b.views / _vm.max) * 100 + '%' })})])}),0),_c('div',{staticClass:"k-moniter-chart-axis"},[_c('span',[_vm._v(_vm._s(_vm.buckets[0].label))]),_c('span',[_vm._v(_vm._s(_vm.buckets[_vm.buckets.length - 1].label))])])]),(_vm.hover)?_c('div',{staticClass:"k-moniter-tip",style:({ left: _vm.hover.x + 'px', top: _vm.hover.y + 'px' })},[_vm._v(" "+_vm._s(_vm.num(_vm.hover.b.views))+" "+_vm._s(_vm.$t(_vm.hover.b.views > 1 ? 'moniter.views' : 'moniter.view'))+" "),_c('span',{staticClass:"k-moniter-muted"},[_vm._v("· "+_vm._s(_vm.hover.b.label))])]):_vm._e()]),_c('div',{staticClass:"k-moniter-grid"},_vm._l((_vm.boxes),function(box){return _c('section',{key:box.key,staticClass:"k-moniter-block",class:{ 'k-moniter-wide': box.wide, 'k-moniter-full': box.map && _vm.map }},[_c('h2',{staticClass:"k-moniter-caption"},[_vm._v(_vm._s(_vm.$t('moniter.' + box.key)))]),(box.map && _vm.map)?_c('div',{staticClass:"k-moniter-map-layout"},[_c('k-moniter-map',{attrs:{"src":_vm.map,"countries":_vm.stats.countries}}),_c('k-moniter-list',{attrs:{"items":box.items,"limit":box.limit}})],1):_c('k-moniter-list',{attrs:{"items":box.items,"shares":box.shares !== false,"limit":box.limit || 10}}),(box.note)?_c('p',{staticClass:"k-moniter-note"},[_vm._v(_vm._s(_vm.$t('moniter.' + box.note)))]):_vm._e()],1)}),0),_c('p',{staticClass:"k-moniter-privacy"},[_vm._v(_vm._s(_vm.$t('moniter.privacy')))])],_c('footer',{staticClass:"k-moniter-ink k-moniter-footer"},[_c('span',[_vm._v("moniter")]),_c('a',{attrs:{"href":"https://rollinger.design","target":"_blank","rel":"noopener"}},[_vm._v("rollinger.design")])])],2)])
+      render: (() => {
+function render(_ctx, _cache) {
+  const _component_k_moniter_map = _resolveComponent("k-moniter-map")
+  const _component_k_moniter_list = _resolveComponent("k-moniter-list")
+  const _component_k_panel_inside = _resolveComponent("k-panel-inside")
+
+  return (_openBlock(), _createBlock(_component_k_panel_inside, { class: "k-moniter-view" }, {
+    default: _withCtx(() => [
+      _createElementVNode("div", { class: "k-moniter" }, [
+        _createElementVNode("header", { class: "k-moniter-ink k-moniter-header" }, [
+          _createElementVNode("h1", null, _toDisplayString(_ctx.$t('moniter.audience')), 1 /* TEXT */),
+          _createElementVNode("nav", { class: "k-moniter-periods" }, [
+            (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.PERIODS, (p) => {
+              return (_openBlock(), _createElementBlock("button", {
+                key: p,
+                type: "button",
+                "aria-current": p === _ctx.period ? 'true' : null,
+                onClick: $event => (_ctx.go(p))
+              }, _toDisplayString(_ctx.$t('moniter.period.' + p)), 9 /* TEXT, PROPS */, ["aria-current", "onClick"]))
+            }), 128 /* KEYED_FRAGMENT */))
+          ])
+        ]),
+        (_ctx.analytics)
+          ? (_openBlock(), _createElementBlock("p", {
+              key: 0,
+              class: "k-moniter-tools"
+            }, [
+              _createElementVNode("a", {
+                href: _ctx.analytics,
+                class: "k-moniter-button",
+                target: "_blank",
+                rel: "noopener"
+              }, _toDisplayString(_ctx.$t('moniter.analytics')) + " ↗", 9 /* TEXT, PROPS */, ["href"])
+            ]))
+          : _createCommentVNode("v-if", true),
+        (_ctx.error)
+          ? (_openBlock(), _createElementBlock("p", {
+              key: 1,
+              class: "k-moniter-block k-moniter-message"
+            }, _toDisplayString(_ctx.$t('moniter.error.' + _ctx.error)), 1 /* TEXT */))
+          : (!_ctx.hasData)
+            ? (_openBlock(), _createElementBlock("p", {
+                key: 2,
+                class: "k-moniter-block k-moniter-message"
+              }, _toDisplayString(_ctx.$t('moniter.empty')), 1 /* TEXT */))
+            : (_openBlock(), _createElementBlock(_Fragment, { key: 3 }, [
+                _createElementVNode("div", { class: "k-moniter-kpis" }, [
+                  (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.kpis, (k) => {
+                    return (_openBlock(), _createElementBlock("div", {
+                      key: k.key,
+                      class: "k-moniter-kpi",
+                      "data-color": k.color
+                    }, [
+                      _createElementVNode("div", {
+                        class: "k-moniter-kpi-dot",
+                        "data-size": k.size
+                      }, [
+                        _createElementVNode("span", { class: "k-moniter-kpi-value" }, _toDisplayString(k.text), 1 /* TEXT */),
+                        _createElementVNode("span", { class: "k-moniter-kpi-unit" }, _toDisplayString(k.unit), 1 /* TEXT */)
+                      ], 8 /* PROPS */, ["data-size"]),
+                      _createElementVNode("p", { class: "k-moniter-kpi-label" }, [
+                        _createTextVNode(_toDisplayString(k.label) + " ", 1 /* TEXT */),
+                        (k.delta)
+                          ? (_openBlock(), _createElementBlock("span", {
+                              key: 0,
+                              class: "k-moniter-kpi-delta"
+                            }, _toDisplayString(k.delta), 1 /* TEXT */))
+                          : _createCommentVNode("v-if", true)
+                      ])
+                    ], 8 /* PROPS */, ["data-color"]))
+                  }), 128 /* KEYED_FRAGMENT */))
+                ]),
+                _createElementVNode("p", { class: "k-moniter-compared" }, _toDisplayString(_ctx.compared), 1 /* TEXT */),
+                _createElementVNode("section", { class: "k-moniter-block" }, [
+                  _createElementVNode("h2", { class: "k-moniter-caption" }, _toDisplayString(_ctx.$t(_ctx.monthly ? 'moniter.chart.month' : 'moniter.chart.day')), 1 /* TEXT */),
+                  _createElementVNode("div", {
+                    class: "k-moniter-chart",
+                    role: "img",
+                    "aria-label": _ctx.$t('moniter.chart')
+                  }, [
+                    _createElementVNode("span", { class: "k-moniter-chart-max" }, _toDisplayString(_ctx.num(_ctx.max)), 1 /* TEXT */),
+                    _createElementVNode("div", {
+                      class: "k-moniter-chart-bars",
+                      onPointermove: _cache[0] || (_cache[0] = (...args) => (_ctx.onMove && _ctx.onMove(...args))),
+                      onPointerdown: _cache[1] || (_cache[1] = (...args) => (_ctx.onMove && _ctx.onMove(...args))),
+                      onPointerleave: _cache[2] || (_cache[2] = $event => (_ctx.hover = null))
+                    }, [
+                      (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.buckets, (b, i) => {
+                        return (_openBlock(), _createElementBlock("div", {
+                          key: b.key,
+                          class: "k-moniter-chart-col",
+                          "data-i": i
+                        }, [
+                          _createElementVNode("div", {
+                            class: _normalizeClass(["k-moniter-chart-bar", { zero: !b.views, active: _ctx.hover && _ctx.hover.b === b }]),
+                            style: _normalizeStyle({ height: (b.views / _ctx.max) * 100 + '%' })
+                          }, null, 6 /* CLASS, STYLE */)
+                        ], 8 /* PROPS */, ["data-i"]))
+                      }), 128 /* KEYED_FRAGMENT */))
+                    ], 32 /* NEED_HYDRATION */),
+                    _createElementVNode("div", { class: "k-moniter-chart-axis" }, [
+                      _createElementVNode("span", null, _toDisplayString(_ctx.buckets[0].label), 1 /* TEXT */),
+                      _createElementVNode("span", null, _toDisplayString(_ctx.buckets[_ctx.buckets.length - 1].label), 1 /* TEXT */)
+                    ])
+                  ], 8 /* PROPS */, ["aria-label"]),
+                  (_ctx.hover)
+                    ? (_openBlock(), _createElementBlock("div", {
+                        key: 0,
+                        class: "k-moniter-tip",
+                        style: _normalizeStyle({ left: _ctx.hover.x + 'px', top: _ctx.hover.y + 'px' })
+                      }, [
+                        _createTextVNode(_toDisplayString(_ctx.num(_ctx.hover.b.views)) + " " + _toDisplayString(_ctx.$t(_ctx.hover.b.views > 1 ? 'moniter.views' : 'moniter.view')) + " ", 1 /* TEXT */),
+                        _createElementVNode("span", { class: "k-moniter-muted" }, "· " + _toDisplayString(_ctx.hover.b.label), 1 /* TEXT */)
+                      ], 4 /* STYLE */))
+                    : _createCommentVNode("v-if", true)
+                ]),
+                _createElementVNode("div", { class: "k-moniter-grid" }, [
+                  (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.boxes, (box) => {
+                    return (_openBlock(), _createElementBlock("section", {
+                      key: box.key,
+                      class: _normalizeClass(["k-moniter-block", { 'k-moniter-wide': box.wide, 'k-moniter-full': box.map && _ctx.map }])
+                    }, [
+                      _createElementVNode("h2", { class: "k-moniter-caption" }, _toDisplayString(_ctx.$t('moniter.' + box.key)), 1 /* TEXT */),
+                      (box.map && _ctx.map)
+                        ? (_openBlock(), _createElementBlock("div", {
+                            key: 0,
+                            class: "k-moniter-map-layout"
+                          }, [
+                            _createVNode(_component_k_moniter_map, {
+                              src: _ctx.map,
+                              countries: _ctx.stats.countries
+                            }, null, 8 /* PROPS */, ["src", "countries"]),
+                            _createVNode(_component_k_moniter_list, {
+                              items: box.items,
+                              limit: box.limit
+                            }, null, 8 /* PROPS */, ["items", "limit"])
+                          ]))
+                        : (_openBlock(), _createBlock(_component_k_moniter_list, {
+                            key: 1,
+                            items: box.items,
+                            shares: box.shares !== false,
+                            limit: box.limit || 10
+                          }, null, 8 /* PROPS */, ["items", "shares", "limit"])),
+                      (box.note)
+                        ? (_openBlock(), _createElementBlock("p", {
+                            key: 2,
+                            class: "k-moniter-note"
+                          }, _toDisplayString(_ctx.$t('moniter.' + box.note)), 1 /* TEXT */))
+                        : _createCommentVNode("v-if", true)
+                    ], 2 /* CLASS */))
+                  }), 128 /* KEYED_FRAGMENT */))
+                ]),
+                _createElementVNode("p", { class: "k-moniter-privacy" }, _toDisplayString(_ctx.$t('moniter.privacy')), 1 /* TEXT */)
+              ], 64 /* STABLE_FRAGMENT */)),
+        _createElementVNode("footer", { class: "k-moniter-ink k-moniter-footer" }, [
+          _createElementVNode("span", null, "moniter"),
+          _createElementVNode("a", {
+            href: "https://rollinger.design",
+            target: "_blank",
+            rel: "noopener"
+          }, "rollinger.design")
+        ])
+      ])
+    ]),
+    _: 1 /* STABLE */
+  }))
 }
-var staticRenderFns = []
-return { render, staticRenderFns }
+return render
 })(),
     },
   },

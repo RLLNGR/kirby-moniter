@@ -191,7 +191,7 @@ return [
 ];
 ```
 
-**Kirby versions.** From v2.0 the view is built for Kirby 6, whose Panel runs on Vue 3. On Kirby 3, 4 and 5 everything else keeps working (status, beacon, stats) and the Audience entry is simply not shown: stay on v1.x (`"rllngr/kirby-moniter": "^1.8"`) to keep it there.
+**Kirby versions.** v2 requires Kirby 6 (PHP 8.3+): its Panel bundle is an ES module built for Kirby 6's Vue 3 Panel. Kirby 3, 4 and 5 sites stay on v1.x (`"rllngr/kirby-moniter": "^1.8"`), which composer picks for them.
 
 The view ships precompiled render functions, so it does not depend on Vue's template compiler being available at runtime (a CSP without `'unsafe-eval'`).
 

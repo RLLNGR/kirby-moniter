@@ -64,9 +64,17 @@ function moniterPanelAccess(): bool
     return $option === true || in_array($user->role()->name(), (array) $option, true);
 }
 
+// URL de la carte du Panel : la route moniter/world-110m.json, avec l'empreinte du fichier pour le cache
+function moniterMapUrl(): string
+{
+    $file = __DIR__ . '/assets/world-110m.json';
+    $hash = is_file($file) ? md5_file($file) : false;
+    return url('moniter/world-110m.json') . '?v=' . ($hash ? substr($hash, 0, 8) : '0');
+}
+
 Kirby::plugin('rllngr/kirby-moniter', [
     'info' => [
-        'version' => '1.7.0',
+        'version' => '1.7.1',
     ],
     // Vue Audience dans le Panel (Kirby ≥ 4 : k-panel-inside n'existe pas en 3)
     'areas' => version_compare(Kirby::version(), '4.0.0', '>=') ? [
@@ -97,7 +105,9 @@ Kirby::plugin('rllngr/kirby-moniter', [
                                 'error'  => $error,
                                 'stats'  => $error ? null : Summary::summary($period, kirby()->user()->language()),
                                 // Tracés des pays (Natural Earth 110m, domaine public), chargés seulement s'il y a des pays
-                                'map'    => kirby()->plugin('rllngr/kirby-moniter')->asset('world-110m.json')?->url(),
+                                // Servis par la route moniter/world-110m.json plutôt que par ->asset() : un asset est
+                                // un lien symbolique dans media/plugins, que certains hébergeurs (OVH) refusent en 403.
+                                'map'    => moniterMapUrl(),
                             ],
                         ];
                     },
@@ -119,6 +129,18 @@ Kirby::plugin('rllngr/kirby-moniter', [
         },
     ],
     'routes' => [
+        [
+            // Tracés des pays pour la carte du Panel, lus et renvoyés par PHP : rien dans media/,
+            // donc rien que l'hébergeur puisse refuser. L'URL porte l'empreinte du fichier, d'où le cache d'un an.
+            'pattern' => 'moniter/world-110m.json',
+            'method'  => 'GET',
+            'action'  => function () {
+                return Response::file(__DIR__ . '/assets/world-110m.json', [
+                    'type'    => 'application/json',
+                    'headers' => ['Cache-Control' => 'public, max-age=31536000, immutable'],
+                ]);
+            },
+        ],
         [
             // Script du beacon (voir src/beacon.js) : aucun identifiant, seul le chemin de la page d'entrée
             // est gardé en sessionStorage le temps de l'onglet, pour mesurer le rebond.

@@ -1,0 +1,39 @@
+{
+  "name": "@rllngr/nuxt-moniter",
+  "version": "1.0.0",
+  "description": "Nuxt module for Moniter: package versions endpoint and AI bot visits for headless fronts",
+  "license": "MIT",
+  "author": "Nicolas Rollinger (https://rollinger.design)",
+  "homepage": "https://github.com/RLLNGR/kirby-moniter/tree/main/nuxt",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RLLNGR/kirby-moniter.git",
+    "directory": "nuxt"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/types.d.mts",
+      "import": "./dist/module.mjs"
+    }
+  },
+  "main": "./dist/module.mjs",
+  "types": "./dist/types.d.mts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "nuxt-module-build build",
+    "prepack": "nuxt-module-build build"
+  },
+  "dependencies": {
+    "@nuxt/kit": "^4.0.0"
+  },
+  "devDependencies": {
+    "@nuxt/cli": "^3.37.0",
+    "@nuxt/module-builder": "^1.0.4",
+    "@nuxt/schema": "^4.7.0",
+    "nuxt": "^4.7.0",
+    "typescript": "^5.9.3"
+  }
+}

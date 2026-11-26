@@ -26,7 +26,7 @@ class Stats
      * training (collecte pour entraîner un modèle), search (index d'un moteur de réponses),
      * user (une personne a posé une question et l'assistant est allé lire la page).
      * Google-Extended et Applebot-Extended n'y sont pas : ce sont des consignes de robots.txt, jamais un User-Agent.
-     * Même liste dans nuxt/moniter-bots.ts : garder les deux alignées.
+     * Même liste dans nuxt/src/runtime/server/bots.ts : garder les deux alignées.
      */
     const AI_BOTS = [
         'training' => ['GPTBot', 'ClaudeBot', 'CCBot', 'meta-externalagent', 'MistralAI-Training', 'Amazonbot'],
@@ -343,7 +343,7 @@ class Stats
     }
 
     /**
-     * Passage signalé par un front headless (nuxt/moniter-bots.ts) : { ua, p }. Le User-Agent n'est lu que
+     * Passage signalé par un front headless (@rllngr/nuxt-moniter, nuxt/src/runtime/server/bots.ts) : { ua, p }. Le User-Agent n'est lu que
      * pour reconnaître le robot, jamais enregistré. false si le corps ne désigne pas un robot d'IA sur une page.
      */
     public static function handleBotReport(): bool

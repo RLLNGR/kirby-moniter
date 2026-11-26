@@ -69,9 +69,9 @@ same(null, Stats::aiBot('Applebot-Extended'), 'Applebot-Extended (consigne robot
 same(null, Stats::aiBot(''), 'User-Agent vide');
 
 // Le middleware des fronts Nuxt porte la même liste
-preg_match('/const AI_BOTS = \[(.*?)\n\]/s', file_get_contents(__DIR__ . '/../nuxt/moniter-bots.ts'), $m);
+preg_match('/const AI_BOTS = \[(.*?)\n\]/s', file_get_contents(__DIR__ . '/../nuxt/src/runtime/server/bots.ts'), $m);
 preg_match_all("/'([^']+)'/", preg_replace('#^\s*//.*$#m', '', $m[1]), $names); // sans les lignes de commentaire
-same(array_merge(...array_values(Stats::AI_BOTS)), $names[1], 'nuxt/moniter-bots.ts : même liste de robots que Stats::AI_BOTS');
+same(array_merge(...array_values(Stats::AI_BOTS)), $names[1], 'nuxt/src/runtime/server/bots.ts : même liste de robots que Stats::AI_BOTS');
 
 // ── Comptage : un compteur par jour et par robot, la page seulement à la demande d'un utilisateur ──
 Stats::handleBotVisit(array_key_first($uas), '/projets');            // GPTBot

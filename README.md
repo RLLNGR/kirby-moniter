@@ -132,6 +132,16 @@ export default defineNuxtConfig({
 
 If the front has a CSP, allow the CMS domain in `script-src` and `connect-src`. The `moniter.client.ts` plugin from earlier versions keeps working (page views, time, country, language) but sends no device, entries or actions: replace it with the script.
 
+### Nuxt fronts
+
+Kirby never sees the front's packages nor the pages Nuxt serves. The [`@rllngr/nuxt-moniter`](nuxt) module (source in `nuxt/`) covers both: `GET /moniter/status` with the installed versions of Nuxt, its dependencies, the package manager and Node (compared by Moniter to npm), and AI bot reporting to `POST /moniter/bot`.
+
+```bash
+pnpm add @rllngr/nuxt-moniter   # then modules: ['@rllngr/nuxt-moniter'] in nuxt.config.ts
+```
+
+Set `NUXT_MONITER_KEY` (`moniter.key`) and, for AI bots, `NUXT_MONITER_URL` (the CMS address). See [nuxt/README.md](nuxt/README.md).
+
 ### AI assistants and AI bots (v1.8.0)
 
 **Visits coming from AI assistants** are a referrer family of their own (`chatgpt.com`, `perplexity.ai`, `claude.ai`, `gemini.google.com`, Copilot, Mistral, Grok, DeepSeek, Meta AI, Duck.ai, You.com). Since v1.8.0 an entry with **no referrer** whose `utm_source` is one of these domains (ChatGPT adds `utm_source=chatgpt.com` to its links; its apps send no referrer) is stored as coming from that domain — no longer as *direct* + a campaign named `chatgpt.com`. The figure remains a **minimum**: clicks from apps that send neither referrer nor `utm_source`, and Google's AI answers (AI Overviews / AI Mode arrive as `google.com`), cannot be told apart.
@@ -147,7 +157,7 @@ If the front has a CSP, allow the CMS domain in `script-src` and `connect-src`. 
 `Google-Extended` and `Applebot-Extended` are not in the list: they are `robots.txt` tokens, never sent as a User-Agent.
 
 - **Kirby sites**: nothing to do (a `route:after` hook counts the pages Kirby serves, page cache included).
-- **Headless / Nuxt**: Kirby does not see the front's pages. Copy [`nuxt/moniter-bots.ts`](nuxt/moniter-bots.ts) into the front's `server/middleware/` and set `NUXT_MONITER_URL` (the CMS address) and `NUXT_MONITER_KEY` (`moniter.key`). It posts `{ ua, p }` to `POST /moniter/bot` (header `X-Moniter-Key`, `401` without it) without waiting for the answer; the User-Agent is only read to recognise the bot.
+- **Headless / Nuxt**: Kirby does not see the front's pages. Install [`@rllngr/nuxt-moniter`](nuxt) on the front and set `NUXT_MONITER_URL` (the CMS address) and `NUXT_MONITER_KEY` (`moniter.key`). It posts `{ ua, p }` to `POST /moniter/bot` (header `X-Moniter-Key`, `401` without it) without waiting for the answer; the User-Agent is only read to recognise the bot.
 - A page answered by a cache in front of the site (CDN, static cache) is seen by neither.
 
 ### Export

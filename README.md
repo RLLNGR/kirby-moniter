@@ -161,7 +161,7 @@ Since v1.5.0 the Panel gets an **Audience** entry in its menu (`/panel/audience`
 
 - Key figures for 7 days, 30 days, this month, 90 days or 1 year, compared to the previous period of the same length (only when that period was fully measured).
 - Page views per day (per month over 1 year), most read pages, entry pages and bounce, sources, referring sites, devices, languages, clicks, campaigns.
-- Page views per country on a world map (Natural Earth 110m, public domain, `assets/world-110m.json`, loaded only when there are countries).
+- Page views per country on a world map (Natural Earth 110m, public domain, `assets/world-110m.json`, served by the `moniter/world-110m.json` route rather than `media/`, so hosts that refuse symlinks (OVH) still draw it; loaded only when there are countries).
 - Same calculations and same look as the Moniter dashboard and its monthly report (cream, ink bars, coloured cards). Follows the Panel's light / dark theme on Kirby 5.
 - Labels in French and English (other Panel languages fall back to English).
 

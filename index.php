@@ -68,7 +68,8 @@ function moniterPanelAccess(): bool
 function moniterMapUrl(): string
 {
     $file = __DIR__ . '/assets/world-110m.json';
-    return url('moniter/world-110m.json') . '?v=' . substr(md5_file($file), 0, 8);
+    $hash = is_file($file) ? md5_file($file) : false;
+    return url('moniter/world-110m.json') . '?v=' . ($hash ? substr($hash, 0, 8) : '0');
 }
 
 Kirby::plugin('rllngr/kirby-moniter', [
